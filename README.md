@@ -88,6 +88,7 @@ pytest
 | [EU AI Act Risk Check](https://github.com/gifmaster/ai-act-risk-check) | Classify an AI system under the EU AI Act |
 | [Practical AI Governance Framework](https://github.com/gifmaster/ai-governance-framework) | Policy, roles, lifecycle and templates |
 | This tool | Review the vendor contract before you buy |
+| [AI Use Case Register](https://github.com/gifmaster/ai-use-case-register) | Keep track of every AI use case |
 
 ## Limitations
 
