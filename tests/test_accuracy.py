@@ -14,7 +14,15 @@ from clausecheck import Rules, analyse, read_file
 ROOT = Path(__file__).parents[1]
 TRUTH = yaml.safe_load((Path(__file__).parent / "ground_truth.yaml").read_text(encoding="utf-8"))["samples"]
 RULES = Rules.builtin()
-RESULTS = {name: analyse(read_file(ROOT / "samples" / name), RULES) for name in TRUTH}
+RESULTS = {name: analyse(read_file(ROOT / "samples" / name), RULES, dora="critical") for name in TRUTH}
+
+
+def core(result):
+    return {f.id for f in result.findings if f.pack == "core"}
+
+
+def dora(result):
+    return {f.id for f in result.findings if f.pack == "dora"}
 
 
 @pytest.mark.parametrize("name", TRUTH)
@@ -27,8 +35,15 @@ def test_clauses_found_where_expected(name):
 
 @pytest.mark.parametrize("name", TRUTH)
 def test_findings_exactly_as_labelled(name):
-    got = {f.id for f in RESULTS[name].findings}
+    got = core(RESULTS[name])
     want = set(TRUTH[name]["findings"])
+    assert got == want, f"{name}: missing {want - got}, unexpected {got - want}"
+
+
+@pytest.mark.parametrize("name", TRUTH)
+def test_dora_findings_exactly_as_labelled(name):
+    got = dora(RESULTS[name])
+    want = set(TRUTH[name]["dora"])
     assert got == want, f"{name}: missing {want - got}, unexpected {got - want}"
 
 
@@ -50,7 +65,7 @@ def test_overall_precision_and_recall():
         tp += len(want & got)
         fn += len(want - got)
         fp += len({g for g in got if g[0] not in truth["clauses"]})
-        fw, gw = set(truth["findings"]), {f.id for f in result.findings}
+        fw, gw = set(truth["findings"]) | set(truth["dora"]), {f.id for f in result.findings}
         tp += len(fw & gw)
         fn += len(fw - gw)
         fp += len(gw - fw)
@@ -60,7 +75,7 @@ def test_overall_precision_and_recall():
 
 
 def test_every_finding_has_evidence_or_is_a_missing_clause():
-    missing_type = {k["id"] for k in RULES.checks if k["type"] == "missing"}
+    missing_type = {k["id"] for k in RULES.all_checks if k["type"] in ("missing", "absent")}
     for name, result in RESULTS.items():
         for f in result.findings:
             assert f.evidence or f.id in missing_type, f"{name}: {f.id} has no evidence"
@@ -70,6 +85,6 @@ def test_every_finding_has_evidence_or_is_a_missing_clause():
 def test_same_result_from_pdf_and_word(fmt):
     """The same contract as PDF or Word must give the same findings and key terms as plain text."""
     base = RESULTS["01_brightloop_ai_terms_EN.txt"]
-    other = analyse(read_file(ROOT / "samples" / f"04_brightloop_ai_terms_EN.{fmt}"), RULES)
+    other = analyse(read_file(ROOT / "samples" / f"04_brightloop_ai_terms_EN.{fmt}"), RULES, dora="critical")
     assert {f.id for f in other.findings} == {f.id for f in base.findings}
     assert {k: v for k, v in other.values.items() if k != "liability_cap"} == {k: v for k, v in base.values.items() if k != "liability_cap"}

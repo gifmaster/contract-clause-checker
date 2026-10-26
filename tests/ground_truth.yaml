@@ -4,6 +4,7 @@
 # clauses:  clause type -> heading of the clause where it should be found
 # findings: check ids that should fire. Every other check should stay silent.
 # values:   key values that should be extracted
+# dora:     DORA checks (level "critical", Art. 30(2) and (3)) that should fire. The others should stay silent.
 
 samples:
   01_brightloop_ai_terms_EN.txt:
@@ -17,6 +18,9 @@ samples:
       governing_law: "9. Governing Law"
     findings: [ai_training_on_data, no_dpa, no_liability_cap, transfer_without_safeguards, no_ai_act_terms,
                auto_renewal, unilateral_changes, vendor_may_end_anytime, non_eu_law, missing_confidentiality]
+    dora: [dora_subcontracting, dora_location_change_notice, dora_data_security, dora_data_return, dora_insolvency_access,
+           dora_service_levels, dora_incident_assistance, dora_authority_cooperation, dora_regulatory_termination, dora_training,
+           dora_quantitative_slas, dora_material_change_notice, dora_business_continuity, dora_tlpt, dora_audit_rights, dora_exit_strategy]
     values:
       governing_law: "USA (Delaware)"
       initial_term: "12 months"
@@ -37,6 +41,9 @@ samples:
       changes: "11. Changes"
       governing_law: "12. Governing Law and Disputes"
     findings: []
+    dora: [dora_location_change_notice, dora_data_security, dora_insolvency_access, dora_incident_assistance,
+           dora_authority_cooperation, dora_regulatory_termination, dora_training, dora_material_change_notice,
+           dora_business_continuity, dora_tlpt, dora_audit_rights, dora_exit_strategy]
     values:
       governing_law: Denmark
       initial_term: "24 months"
@@ -54,6 +61,9 @@ samples:
       liability: "8. Ansvarsbegrænsning"
       governing_law: "9. Lovvalg og værneting"
     findings: [auto_renewal, unilateral_changes]
+    dora: [dora_subcontracting, dora_location_change_notice, dora_data_security, dora_data_return, dora_insolvency_access,
+           dora_service_levels, dora_incident_assistance, dora_authority_cooperation, dora_regulatory_termination, dora_training,
+           dora_quantitative_slas, dora_material_change_notice, dora_business_continuity, dora_tlpt, dora_audit_rights, dora_exit_strategy]
     values:
       governing_law: Denmark
       initial_term: "12 months"
@@ -71,6 +81,49 @@ samples:
       confidentiality: "SECTION 6. KEEPING THINGS CONFIDENTIAL"
       governing_law: "SECTION 7. LAW"
     findings: [ai_training_on_data, no_ai_act_terms, unilateral_changes, non_eu_law]
+    dora: [dora_subcontracting, dora_data_location, dora_location_change_notice, dora_data_security, dora_data_return,
+           dora_insolvency_access, dora_service_levels, dora_incident_assistance, dora_authority_cooperation,
+           dora_regulatory_termination, dora_training, dora_quantitative_slas, dora_material_change_notice,
+           dora_business_continuity, dora_tlpt, dora_audit_rights, dora_exit_strategy]
     values:
       governing_law: "England and Wales"
       auto_renewal: false
+
+  # A contract written to meet DORA Art. 30, with two gaps planted on purpose (TLPT and training).
+  06_havbro_claims_ai_DORA_EN.txt:
+    clauses:
+      term: "2. Term"
+      termination: "3. Termination"
+      payment: "5. Fees"
+      service_levels: "6. Service Levels"
+      data_protection: "9. Data Location and Data Protection"
+      ai_use: "11. Artificial Intelligence"
+      confidentiality: "12. Confidentiality"
+      liability: "13. Limitation of Liability"
+      governing_law: "14. Governing Law and Disputes"
+    findings: []
+    dora: [dora_tlpt, dora_training]
+    values:
+      governing_law: Denmark
+      initial_term: "36 months"
+      auto_renewal: false
+      uptime: "99.9%"
+
+  # Danish DORA contract written after the DORA rules were locked, as a held-out test.
+  # First run: 3 false DORA findings and one missed clause, from three general gaps; see docs/METHOD.md.
+  holdout/07_dataskov_pension_ai_DA.txt:
+    clauses:
+      termination: "2. Aftalens varighed og opsigelse"
+      service_levels: "3. Driftsstabilitet og servicemål"
+      data_protection: "5. Data"
+      ai_use: "7. Kunstig intelligens"
+      payment: "8. Vederlag"
+      confidentiality: "9. Fortrolighed"
+      liability: "10. Ansvar"
+      governing_law: "11. Lovvalg og værneting"
+    findings: []
+    dora: [dora_training, dora_material_change_notice, dora_tlpt, dora_exit_strategy]
+    values:
+      governing_law: Denmark
+      auto_renewal: false
+      uptime: "99.8%"

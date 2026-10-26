@@ -1,0 +1,47 @@
+LEVERANCEAFTALE OM IKT-YDELSER
+DATASKOV AI APS
+
+Aftale mellem Dataskov AI ApS, Odense ("Leverandøren") og pensionskassen angivet i bestillingen ("Kunden"). Fiktiv held-out eksempelkontrakt: skrevet efter at reglerne var låst og bruges kun til at måle træfsikkerhed. Kunden er en finansiel enhed omfattet af DORA, og ydelsen understøtter en kritisk eller vigtig funktion.
+
+1. Ydelsen
+1.1 Leverandøren leverer en AI-baseret tjeneste, der læser indkomne medlemshenvendelser og foreslår svar til Kundens rådgivere ("Ydelsen"). Ydelsen er nærmere beskrevet i bilag 1.
+1.2 Leverandøren må benytte underleverandører til drift af Ydelsen. Brug af nye underleverandører kræver Kundens forudgående skriftlige godkendelse.
+
+2. Aftalens varighed og opsigelse
+2.1 Aftalen træder i kraft ved underskrift og er uopsigelig i 24 måneder. Herefter kan hver part opsige aftalen med 6 måneders skriftligt varsel.
+2.2 Kunden kan endvidere ophæve aftalen uden varsel, hvis Finanstilsynet påbyder Kunden at bringe aftalen til ophør, eller hvis Leverandøren overtræder gældende lovgivning.
+
+3. Driftsstabilitet og servicemål
+3.1 Leverandøren garanterer en oppetid på 99,8 % målt pr. måned.
+3.2 Fejl af kategori A afhjælpes inden for 4 timer.
+3.3 Leverandøren har en beredskabsplan, der afprøves mindst én gang årligt.
+
+4. Informationssikkerhed
+4.1 Leverandøren træffer passende tekniske og organisatoriske sikkerhedsforanstaltninger og sikrer fortrolighed, integritet og tilgængelighed af Kundens data.
+4.2 Leverandøren underretter Kunden om sikkerhedshændelser senest 24 timer efter, at Leverandøren er blevet opmærksom på hændelsen, og yder Kunden den nødvendige bistand i forbindelse med håndteringen af hændelsen uden yderligere betaling.
+
+5. Data
+5.1 Kundens data opbevares og behandles udelukkende i datacentre i Tyskland.
+5.2 Leverandøren skal give Kunden skriftligt varsel på mindst 3 måneder, før placeringen af data ændres.
+5.3 Ved aftalens ophør, eller hvis Leverandøren går konkurs, stiller Leverandøren alle Kundens data til rådighed for Kunden i et almindeligt anvendt, maskinlæsbart format.
+5.4 Leverandøren behandler personoplysninger som databehandler for Kunden i henhold til databehandleraftalen i bilag 3.
+
+6. Kontrol og tilsyn
+6.1 Kunden, Kundens revisor og Finanstilsynet har ret til at foretage revision og inspektion hos Leverandøren.
+6.2 Leverandøren samarbejder fuldt ud med Finanstilsynet.
+
+7. Kunstig intelligens
+7.1 Leverandøren må ikke anvende Kundens data til at træne eller forbedre sprogmodeller.
+7.2 Leverandøren stiller en brugsanvisning til rådighed, der beskriver Ydelsens begrænsninger og krav til menneskeligt tilsyn efter AI-forordningen.
+
+8. Vederlag
+8.1 Vederlaget faktureres kvartalsvis forud med 30 dages betalingsfrist.
+
+9. Fortrolighed
+9.1 Parterne har tavshedspligt om fortrolige oplysninger, som de modtager i forbindelse med aftalen.
+
+10. Ansvar
+10.1 Ingen af parterne er ansvarlige for indirekte tab. Den samlede erstatning er begrænset til vederlaget for de seneste 12 måneder.
+
+11. Lovvalg og værneting
+11.1 Aftalen er underlagt dansk ret. Tvister afgøres ved Retten i Odense.

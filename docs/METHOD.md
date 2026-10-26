@@ -3,12 +3,25 @@
 ## How it works
 
 1. **Read.** PDF, Word or text is turned into plain text.
-2. **Split into clauses.** A new clause starts at a heading: numbered (`4. Fees`, `4.2`), `Section 5` style, or a line in capitals. Numbered lines that read like full sentences are treated as sub-clauses, not headings. Everything before the first numbered heading is treated as title and preamble.
+2. **Split into clauses.** A new clause starts at a heading: numbered (`4. Fees`), `Section 5` style, or a line in capitals. Numbered sub-clauses (`4.2 ...`) that end like a sentence are treated as text, not headings, even when they are short. Everything before the first numbered heading is treated as title and preamble.
 3. **Classify.** Each clause is scored against the clause types in [`rules/clauses.yaml`](../src/clausecheck/rules/clauses.yaml): a heading match counts 3 points, each matching body pattern 1 point. The highest score wins if it reaches 3.
 4. **Extract key terms.** Governing law, initial term, notice periods, automatic renewal, liability cap and availability, from the clauses where they belong.
 5. **Check.** The rules in [`rules/checks.yaml`](../src/clausecheck/rules/checks.yaml) run on the text. Checks work on whole sentences, so negations (`shall not use Customer Data to train`) and consent conditions (`only with prior written consent`) are recognised. Every finding carries the sentence that triggered it.
 
 All patterns cover English and Danish.
+
+## DORA pack
+
+For financial entities under DORA (Regulation (EU) 2022/2554), an optional pack in [`rules/dora.yaml`](../src/clausecheck/rules/dora.yaml) checks the key contractual provisions of Article 30. Every AI tool a bank, insurer or pension fund buys is an ICT service, so its contract must contain them.
+
+| Level | Articles | Checks |
+|---|---|---|
+| Any ICT service | Art. 30(2)(a) to (i), with termination grounds from Art. 28(7) | 12 |
+| ICT service supporting a critical or important function | Art. 30(2) plus Art. 30(3)(a) to (f) | 18 |
+
+The DORA checks are of type `absent`: they look for wording that covers the provision anywhere in the contract, and a provision counts as covered only if the sentence is not negated (*"may not audit"*). The report shows a checklist of all provisions, covered or not found. *Not found* means not found in the main text. DORA contracts often put service levels, audit procedures and exit plans in appendices, which the tool does not read, so a gap is a question to ask, not a conclusion.
+
+The pack checks that a provision is there, not that it is good enough. A six-month transition period and a six-week one both count as an exit term.
 
 ## Accuracy
 
@@ -20,7 +33,23 @@ Measured on hand-labelled fictional contracts in [`tests/ground_truth.yaml`](../
 | **Held-out contract**, different style, rules not changed | First run | **0 of 6** | **0.50 / 1.00** |
 | Same held-out contract | After two general fixes | 6 of 6 | 1.00 / 1.00 |
 
+DORA pack, at the level for critical or important functions (18 checks per contract):
+
+| Set | When | Clause detection | DORA checks (precision / recall) |
+|---|---|---|---|
+| 5 development samples, incl. one written to meet DORA | Final rules | 41 of 41 | 1.00 / 1.00 |
+| **Held-out Danish DORA contract**, rules not changed | First run | **7 of 8** | **0.57 / 1.00** |
+| Same held-out contract | After three general fixes | 8 of 8 | 1.00 / 1.00 |
+
 **What the held-out test showed.** The checks themselves held up on a contract they had never seen: every real issue was flagged. But headings in the style `SECTION 1. THE SERVICE` were not recognised, so the whole contract was read as one block and four clauses were reported missing when they were not. Two general fixes followed: support for `SECTION`/`CLAUSE`-style headings in capitals, and plain-English heading words (*Charges*, *Ending the contract*, *Law*, *Your content*). After that the held-out contract became part of the regression set, so it no longer counts as unseen.
+
+**What the DORA held-out test showed.** All four real gaps were found, but three provisions that were there were reported missing. The causes were general, not specific to that contract:
+
+1. Short numbered sub-clauses such as `6.2 Leverandøren samarbejder fuldt ud med Finanstilsynet.` were read as headings, and headings were not checked. This affected every check, not only DORA. Fixed in the segmenter.
+2. Danish phrasing the patterns did not know: data is *stillet til rådighed* (made available) rather than returned, and the notice word came before the location word (*varsel, før placeringen af data ændres*).
+3. A clause headed only `Data` was not recognised as data protection.
+
+The contract is now part of the regression set.
 
 **What this means.** The numbers above come from a small set of fictional contracts, partly used to build the rules. Real contracts are messier. Expect missed clauses on unusual layouts and occasional false flags. That is why every finding shows its evidence, and why the tool is built for a human reviewer, not instead of one. The next held-out contracts should be real ones, anonymised.
 

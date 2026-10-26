@@ -29,13 +29,14 @@ def format_value(key: str, value) -> str:
 
 def to_markdown(result: Result, rules: Rules, name: str = "", today: date | None = None) -> str:
     today = today or date.today()
-    high = sum(f.severity == "high" for f in result.findings)
+    core = [f for f in result.findings if f.pack == "core"]
+    high = sum(f.severity == "high" for f in core)
     lines = [
         f"# Contract review: {name or 'Uploaded contract'}",
         "",
         f"- **Date:** {today.isoformat()}",
         f"- **Language detected:** {'Danish' if result.language == 'da' else 'English'}",
-        f"- **Findings:** {len(result.findings)} ({high} high)",
+        f"- **Findings:** {len(core)} ({high} high)",
         "",
         "## Key terms",
         "",
@@ -44,13 +45,23 @@ def to_markdown(result: Result, rules: Rules, name: str = "", today: date | None
         if k in result.values:
             lines.append(f"- **{label}:** {format_value(k, result.values[k])}")
     lines += ["", "## Findings", ""]
-    if not result.findings:
+    if not core:
         lines.append("No issues flagged by the checks.")
-    for f in result.findings:
+    for f in core:
         lines += [f"### [{SEV_LABEL[f.severity]}] {f.title}", "", f"{f.why} *({f.ref})*", ""]
         for e in f.evidence:
             lines.append(f"> {e}")
             lines.append("")
+    checklist = result.dora_checklist(rules)
+    if checklist:
+        covered = sum(ok for _, ok in checklist)
+        scope = "all ICT services, Art. 30(2)" if result.dora == "all" else "ICT services supporting critical or important functions, Art. 30(2) and (3)"
+        lines += ["## DORA key contractual provisions", "",
+                  f"Checked as: {scope}. Covered in the main text: **{covered} of {len(checklist)}**.", "",
+                  "| | Provision | Reference | Severity if missing |", "|---|---|---|---|"]
+        for k, ok in checklist:
+            lines.append(f"| {'Covered' if ok else '**Not found**'} | {k['looked_for'][0].upper() + k['looked_for'][1:]} | {k['ref']} | {SEV_LABEL[k['severity']]} |")
+        lines += ["", "*Not found means the wording was not found in the main contract text. Check appendices and referenced documents before concluding that a term is missing.*", ""]
     lines += ["## Clauses found", "", "| Clause | Found | Where |", "|---|---|---|"]
     for cid, label in rules.labels.items():
         segs = result.clauses.get(cid, [])

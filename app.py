@@ -21,6 +21,12 @@ SAMPLES = {
     "Risky AI vendor terms (English)": "01_brightloop_ai_terms_EN.txt",
     "Balanced AI SaaS agreement (English)": "02_nordlys_analytics_saas_EN.txt",
     "Abonnementsaftale (Danish)": "03_klarsprog_abonnementsaftale_DA.txt",
+    "DORA contract for an insurer (English)": "06_havbro_claims_ai_DORA_EN.txt",
+}
+DORA_OPTIONS = {
+    "No": None,
+    "Yes, an ICT service": "all",
+    "Yes, supporting a critical or important function": "critical",
 }
 SEV = {"high": ("🔴", "High"), "medium": ("🟠", "Medium"), "low": ("🟡", "Low")}
 
@@ -34,12 +40,18 @@ def rules() -> Rules:
 
 R = rules()
 
+
+def sample_changed() -> None:
+    """Switch the DORA option on for the DORA sample, and off for the others."""
+    st.session_state.dora = list(DORA_OPTIONS)[2 if st.session_state.sample.startswith("DORA") else 0]
+
+
 with st.sidebar:
     st.header("Contract")
     source = st.radio("Source", ["Sample contract", "Upload your own"], key="source")
     text, name = "", ""
     if source == "Sample contract":
-        choice = st.selectbox("Sample", list(SAMPLES), key="sample")
+        choice = st.selectbox("Sample", list(SAMPLES), key="sample", on_change=sample_changed)
         name = choice
         text = (ROOT / "samples" / SAMPLES[choice]).read_text(encoding="utf-8")
         st.caption("Fictional contracts written for this demo.")
@@ -51,6 +63,13 @@ with st.sidebar:
                 text, name = read_bytes(up.getvalue(), up.name), up.name
             except Exception as exc:  # show a friendly message for unreadable files
                 st.error(f"Could not read the file: {exc}")
+    st.divider()
+    dora_choice = st.radio(
+        "Is the customer a financial entity under DORA?", list(DORA_OPTIONS), key="dora",
+        help="Banks, insurers, pension funds, investment firms, payment and e-money institutions and others in DORA Art. 2. "
+             "Every AI tool they buy is an ICT service, so its contract must contain the terms in DORA Art. 30.",
+    )
+    dora = DORA_OPTIONS[dora_choice]
     st.divider()
     st.markdown(
         f"**How it works.** The contract is split into clauses, each clause is matched against "
@@ -66,8 +85,10 @@ if not text.strip():
     st.info("Choose a sample contract or upload one to start.")
     st.stop()
 
-result = analyse(text, R)
-n = {s: sum(f.severity == s for f in result.findings) for s in SEV}
+result = analyse(text, R, dora=dora)
+core = [f for f in result.findings if f.pack == "core"]
+dora_findings = [f for f in result.findings if f.pack == "dora"]
+n = {s: sum(f.severity == s for f in core) for s in SEV}
 
 c1, c2, c3, c4 = st.columns(4)
 c1.metric("High", n["high"])
@@ -79,9 +100,9 @@ left, right = st.columns([3, 2], gap="large")
 
 with left:
     st.subheader("Findings")
-    if not result.findings:
+    if not core:
         st.success("No issues flagged by the checks. Still read the contract: the checks cover common risks, not everything.")
-    for f in result.findings:
+    for f in core:
         icon, label = SEV[f.severity]
         with st.expander(f"{icon} **{label}** · {f.title}", expanded=f.severity == "high"):
             st.markdown(f"{f.why}  \n`{f.ref}`")
@@ -104,6 +125,29 @@ with right:
                        file_name="contract-review.md", mime="text/markdown", width="stretch")
     st.download_button("Download clause table (CSV)", to_csv(result, R),
                        file_name="contract-clauses.csv", mime="text/csv", width="stretch")
+
+if dora:
+    st.divider()
+    checklist = result.dora_checklist(R)
+    covered = sum(ok for _, ok in checklist)
+    st.subheader("DORA key contractual provisions")
+    st.caption("Regulation (EU) 2022/2554, Art. 30(2) for all ICT services"
+               + (", plus Art. 30(3) for services supporting critical or important functions." if dora == "critical" else "."))
+    m1, m2 = st.columns([1, 3])
+    m1.metric("Provisions covered", f"{covered} of {len(checklist)}")
+    m2.progress(covered / len(checklist))
+    st.table({
+        "": ["✅" if ok else "❌" for _, ok in checklist],
+        "Provision": [k["looked_for"][0].upper() + k["looked_for"][1:] for k, _ in checklist],
+        "Reference": [k["ref"] for k, _ in checklist],
+    })
+    for f in dora_findings:
+        icon, label = SEV[f.severity]
+        with st.expander(f"{icon} **{label}** · {f.title}"):
+            st.markdown(f"{f.why}  \n`{f.ref}`")
+            st.caption(f"Looked for: {f.looked_for}. Rule: `{f.id}`")
+    st.caption("❌ means the wording was not found in the main contract text. Check appendices and referenced documents "
+               "before concluding that a term is missing.")
 
 st.subheader("The contract, clause by clause")
 for s in result.segments:

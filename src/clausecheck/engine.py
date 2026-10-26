@@ -42,6 +42,8 @@ class Finding:
     why: str
     ref: str
     evidence: list[str] = field(default_factory=list)
+    pack: str = "core"
+    looked_for: str = ""
 
 
 @dataclass
@@ -51,12 +53,21 @@ class Result:
     values: dict[str, Any]
     findings: list[Finding]
     language: str
+    dora: str | None = None
+
+    def dora_checklist(self, rules: "Rules") -> list[tuple[dict, bool]]:
+        """Each DORA check that ran, with True when the contract covers it."""
+        if not self.dora:
+            return []
+        fired = {f.id for f in self.findings}
+        return [(k, k["id"] not in fired) for k in rules.dora if k["level"] in DORA_LEVELS[self.dora]]
 
     def found(self, clause_id: str) -> bool:
         return bool(self.clauses.get(clause_id))
 
 
 SEVERITY_ORDER = {"high": 0, "medium": 1, "low": 2}
+DORA_LEVELS = {"all": ("all",), "critical": ("all", "critical")}  # which check levels run for each choice
 
 # --------------------------------------------------------------------------- #
 # Rules
@@ -64,24 +75,33 @@ SEVERITY_ORDER = {"high": 0, "medium": 1, "low": 2}
 
 
 class Rules:
-    def __init__(self, clauses: dict, checks: dict):
+    def __init__(self, clauses: dict, checks: dict, dora: dict | None = None):
         self.min_score = clauses.get("min_score", 3)
         self.clauses = clauses["clauses"]
         self.labels = {c["id"]: c["label"] for c in self.clauses}
         self.checks = checks["checks"]
+        for k in self.checks:
+            k.setdefault("pack", "core")
+        self.dora = (dora or {}).get("checks", [])
+        for k in self.dora:
+            k["pack"] = "dora"
         self._compile()
         self._validate()
 
     @classmethod
     def builtin(cls) -> "Rules":
         load = lambda n: yaml.safe_load((RULES_DIR / n).read_text(encoding="utf-8"))  # noqa: E731
-        return cls(load("clauses.yaml"), load("checks.yaml"))
+        return cls(load("clauses.yaml"), load("checks.yaml"), load("dora.yaml"))
+
+    @property
+    def all_checks(self) -> list[dict]:
+        return self.checks + self.dora
 
     def _compile(self) -> None:
         for c in self.clauses:
             c["_heading"] = [re.compile(p, FLAGS) for p in c.get("heading", [])]
             c["_body"] = [re.compile(p, FLAGS) for p in c.get("body", [])]
-        for k in self.checks:
+        for k in self.all_checks:
             for key in ("pattern", "unless", "without", "if_any", "then_any"):
                 if key in k:
                     k["_" + key] = [re.compile(p, FLAGS) for p in k[key]]
@@ -89,7 +109,12 @@ class Rules:
     def _validate(self) -> None:
         ids = set(self.labels)
         seen = set()
-        for k in self.checks:
+        for k in self.all_checks:
+            if k.get("pack") == "dora":
+                if k.get("level") not in DORA_LEVELS:
+                    raise ValueError(f"DORA check {k['id']} needs level 'all' or 'critical'")
+                if not k.get("looked_for"):
+                    raise ValueError(f"DORA check {k['id']} is missing 'looked_for'")
             if k["id"] in seen:
                 raise ValueError(f"Duplicate check id {k['id']}")
             seen.add(k["id"])
@@ -124,8 +149,11 @@ def _is_heading(line: str) -> bool:
         return False
     if not HEADING_RE.match(line):
         return False
-    # A numbered line that reads like a full sentence is a sub-clause, not a heading
-    if NUMBER_ONLY_SUBCLAUSE.match(line) and line.rstrip().endswith((".", ";", ":")) and len(line.split()) > 8:
+    # A numbered sub-clause (4.2) that ends like a sentence is text, not a heading, even when it is short:
+    # "6.2 The Supplier cooperates fully with the authority."
+    if NUMBER_ONLY_SUBCLAUSE.match(line) and line.rstrip().endswith((".", ";")) and len(line.split()) > 4:
+        return False
+    if NUMBER_ONLY_SUBCLAUSE.match(line) and line.rstrip().endswith(":") and len(line.split()) > 8:
         return False
     return True
 
@@ -259,7 +287,7 @@ def _scope_sentences(result: Result, scope: str) -> list[str]:
     segs = result.segments if scope == "all" else result.clauses.get(scope, [])
     out = []
     for s in segs:
-        out += _sentences(s.text)
+        out += _sentences(s.full if scope == "all" else s.text)
     return out
 
 
@@ -274,9 +302,13 @@ def _short(s: str, n: int = 260) -> str:
     return s if len(s) <= n else s[: n - 1] + "…"
 
 
-def run_checks(result: Result, text: str, rules: Rules) -> list[Finding]:
+def run_checks(result: Result, text: str, rules: Rules, dora: str | None = None) -> list[Finding]:
+    """Run the core checks, plus the DORA pack when ``dora`` is "all" or "critical"."""
+    if dora not in (None, *DORA_LEVELS):
+        raise ValueError(f"dora must be None, 'all' or 'critical', not {dora!r}")
+    checks = rules.checks + ([k for k in rules.dora if k["level"] in DORA_LEVELS[dora]] if dora else [])
     findings = []
-    for k in rules.checks:
+    for k in checks:
         t, evidence, fire = k["type"], [], False
         if t == "missing":
             fire = not result.found(k["clause"])
@@ -296,6 +328,11 @@ def run_checks(result: Result, text: str, rules: Rules) -> list[Finding]:
             fire = bool(trig) and not any(p.search(text) for p in k["_then_any"])
             if fire:
                 evidence = [_short(s) for s in trig[:2]]
+        elif t == "absent":
+            fire = not any(
+                any(p.search(sent) for p in k["_pattern"]) and not any(u.search(sent) for u in k.get("_unless", []))
+                for sent in _scope_sentences(result, "all")
+            )
         elif t == "value_not_in":
             v = result.values.get(k["value"])
             fire = bool(v) and v not in k["allowed"]
@@ -304,8 +341,9 @@ def run_checks(result: Result, text: str, rules: Rules) -> list[Finding]:
         else:
             raise ValueError(f"Unknown check type {t}")
         if fire:
-            findings.append(Finding(k["id"], k["severity"], k["title"], k["why"], k["ref"], evidence[:3]))
-    findings.sort(key=lambda f: SEVERITY_ORDER[f.severity])
+            findings.append(Finding(k["id"], k["severity"], k["title"], k["why"], k["ref"], evidence[:3],
+                                    k["pack"], k.get("looked_for", "")))
+    findings.sort(key=lambda f: (f.pack != "core", SEVERITY_ORDER[f.severity]))
     return findings
 
 
@@ -317,7 +355,12 @@ DA_WORDS = re.compile(r"\b(og|ikke|skal|aftale|leverandøren|kunden|af|til|eller
 EN_WORDS = re.compile(r"\b(and|not|shall|agreement|the|of|to|or|this|customer)\b", FLAGS)
 
 
-def analyse(text: str, rules: Rules | None = None) -> Result:
+def analyse(text: str, rules: Rules | None = None, dora: str | None = None) -> Result:
+    """Analyse a contract.
+
+    dora: None (default) runs the core checks only. "all" adds the DORA Art. 30(2) checks for any
+    ICT service used by a financial entity, "critical" adds Art. 30(3) for critical or important functions.
+    """
     rules = rules or Rules.builtin()
     segs = segment(text)
     classify(segs, rules)
@@ -326,6 +369,6 @@ def analyse(text: str, rules: Rules | None = None) -> Result:
         if s.clause:
             clauses.setdefault(s.clause, []).append(s)
     lang = "da" if len(DA_WORDS.findall(text)) > len(EN_WORDS.findall(text)) else "en"
-    result = Result(segs, clauses, extract_values(text, clauses), [], lang)
-    result.findings = run_checks(result, text, rules)
+    result = Result(segs, clauses, extract_values(text, clauses), [], lang, dora)
+    result.findings = run_checks(result, text, rules, dora)
     return result
