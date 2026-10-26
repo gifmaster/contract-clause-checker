@@ -1,0 +1,76 @@
+# Labelled ground truth for the sample contracts, made by reading each contract by hand.
+# Used by tests/test_accuracy.py to measure precision and recall of clause detection and checks.
+#
+# clauses:  clause type -> heading of the clause where it should be found
+# findings: check ids that should fire. Every other check should stay silent.
+# values:   key values that should be extracted
+
+samples:
+  01_brightloop_ai_terms_EN.txt:
+    clauses:
+      ai_use: "3. Use of Customer Data"
+      payment: "4. Fees and Payment"
+      term: "5. Term and Renewal"
+      termination: "6. Termination"
+      ip: "7. Intellectual Property"
+      liability: "8. Disclaimer and Liability"
+      governing_law: "9. Governing Law"
+    findings: [ai_training_on_data, no_dpa, no_liability_cap, transfer_without_safeguards, no_ai_act_terms,
+               auto_renewal, unilateral_changes, vendor_may_end_anytime, non_eu_law, missing_confidentiality]
+    values:
+      governing_law: "USA (Delaware)"
+      initial_term: "12 months"
+      auto_renewal: true
+      notice_periods: ["30 days", "90 days"]
+
+  02_nordlys_analytics_saas_EN.txt:
+    clauses:
+      term: "2. Term"
+      termination: "3. Termination"
+      payment: "4. Fees"
+      service_levels: "5. Service Levels"
+      data_protection: "6. Data Protection"
+      ai_use: "7. Artificial Intelligence"
+      confidentiality: "8. Confidentiality"
+      ip: "9. Intellectual Property"
+      liability: "10. Limitation of Liability"
+      changes: "11. Changes"
+      governing_law: "12. Governing Law and Disputes"
+    findings: []
+    values:
+      governing_law: Denmark
+      initial_term: "24 months"
+      auto_renewal: false
+      uptime: "99.5%"
+
+  03_klarsprog_abonnementsaftale_DA.txt:
+    clauses:
+      term: "2. Løbetid og fornyelse"
+      termination: "3. Opsigelse og ophævelse"
+      payment: "4. Vederlag og betaling"
+      data_protection: "5. Behandling af personoplysninger"
+      ai_use: "6. Brug af data og kunstig intelligens"
+      confidentiality: "7. Fortrolighed"
+      liability: "8. Ansvarsbegrænsning"
+      governing_law: "9. Lovvalg og værneting"
+    findings: [auto_renewal, unilateral_changes]
+    values:
+      governing_law: Denmark
+      initial_term: "12 months"
+      auto_renewal: true
+      notice_periods: ["3 months"]
+
+  # Written after the rules were finalised as a held-out test. First run exposed two general gaps
+  # (SECTION-style headings, plain-English headings); see docs/METHOD.md. Now part of the regression set.
+  holdout/05_quillstack_terms_EN.txt:
+    clauses:
+      ai_use: "SECTION 2. YOUR CONTENT"
+      payment: "SECTION 3. CHARGES"
+      termination: "SECTION 4. ENDING THE CONTRACT"
+      liability: "SECTION 5. LIMITATION OF LIABILITY"
+      confidentiality: "SECTION 6. KEEPING THINGS CONFIDENTIAL"
+      governing_law: "SECTION 7. LAW"
+    findings: [ai_training_on_data, no_ai_act_terms, unilateral_changes, non_eu_law]
+    values:
+      governing_law: "England and Wales"
+      auto_renewal: false

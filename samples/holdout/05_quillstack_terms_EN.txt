@@ -1,0 +1,31 @@
+QUILLSTACK LTD
+TERMS OF SERVICE FOR BUSINESS CUSTOMERS
+
+These terms apply between Quillstack Ltd ("we", "us") and the business customer ("you"). Fictional held-out sample: written after the rules were finalised and used only to measure accuracy, never to tune the rules.
+
+SECTION 1. THE SERVICE
+1.1 Quillstack provides an AI writing assistant that generates marketing copy using machine learning.
+1.2 You are responsible for checking generated copy before publishing it.
+
+SECTION 2. YOUR CONTENT
+2.1 You keep ownership of the text and files you upload ("Your Content").
+2.2 You grant us a licence to host and process Your Content to run the service. We may also use Your Content in aggregated form to improve the quality of our language models.
+2.3 Your Content may include personal data. We act as your processor and our Data Processing Addendum forms part of these terms.
+
+SECTION 3. CHARGES
+3.1 Subscription charges are billed monthly in advance by credit card.
+3.2 We may revise our prices from time to time by giving you thirty days' email notice.
+
+SECTION 4. ENDING THE CONTRACT
+4.1 You can cancel at any time from your account settings. Cancellation takes effect at the end of the current billing month.
+4.2 We can suspend your account immediately if you breach the acceptable use policy.
+
+SECTION 5. LIMITATION OF LIABILITY
+5.1 Our total liability to you in any year is limited to the charges you paid us in that year.
+5.2 We are not liable for loss of profits, revenue or goodwill.
+
+SECTION 6. KEEPING THINGS CONFIDENTIAL
+6.1 Each of us will keep the other's confidential information secret and use it only for this contract.
+
+SECTION 7. LAW
+7.1 These terms are governed by the law of England and Wales and the English courts have exclusive jurisdiction.
