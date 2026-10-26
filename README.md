@@ -101,6 +101,7 @@ pytest
 | [Practical AI Governance Framework](https://github.com/gifmaster/ai-governance-framework) | Policy, roles, lifecycle and templates |
 | This tool | Review the vendor contract before you buy |
 | [AI Use Case Register](https://github.com/gifmaster/ai-use-case-register) | Keep track of every AI use case |
+| [Regulation Navigator](https://github.com/gifmaster/regulation-navigator) | See which of the AI Act, GDPR, NIS2 and DORA apply, and where they overlap |
 
 ## Limitations
 
