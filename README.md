@@ -112,4 +112,4 @@ A screening aid for contract review, not legal advice. It needs headings to spli
 Built by **Alexander Senderovitz**, AI governance and digital transformation, Copenhagen.
 [senderovitz.eu](https://senderovitz.eu) · [alexander@senderovitz.eu](mailto:alexander@senderovitz.eu)
 
-MIT License.
+Licensed under the [GNU AGPL-3.0](LICENSE): free to use, study and change. If you run a modified version as a service, you must share its source code. Commercial license without these terms: [alexander@senderovitz.eu](mailto:alexander@senderovitz.eu).
