@@ -1,0 +1,34 @@
+DRIFTSAFTALE OM AI-BASERET VARMEPROGNOSE
+SKOVSØ DATA A/S OG SKOVSØ FJERNVARME AMBA
+
+Kontrakt mellem Skovsø Data A/S ("Leverandøren") og Skovsø Fjernvarme amba ("Kunden"). Fiktiv held-out eksempelkontrakt: skrevet før NIS2-reglerne, aldrig brugt til at justere dem, og kørt én gang for at måle træfsikkerhed. Kunden er en væsentlig enhed efter NIS2-loven.
+
+§ 1 Ydelsen
+Leverandøren driver en AI-platform, der forudsiger varmebehovet i Kundens net time for time og foreslår fremløbstemperaturer til Kundens driftsfolk. Driftsfolkene træffer alle beslutninger om styringen af nettet.
+
+§ 2 Sikkerhed
+Leverandøren overholder de krav til informationssikkerhed, der fremgår af bilag 2, og er certificeret efter ISO/IEC 27001. Leverandørens medarbejdere med adgang til Kundens systemer gennemgår årligt et kursus i informationssikkerhed, og Leverandøren indhenter straffeattest for alle sådanne medarbejdere før ansættelse.
+
+§ 3 Hændelser
+Leverandøren underretter Kunden uden unødig forsinkelse og senest 12 timer efter, at Leverandøren er blevet bekendt med en sikkerhedshændelse, der kan påvirke Kundens net- og informationssystemer.
+
+§ 4 Opdateringer
+Leverandøren kan efter eget valg opdatere og videreudvikle platformen. Nye funktioner meddeles Kunden i en nyhedsmail.
+
+§ 5 Kontrol
+Leverandøren sender hvert år Kunden en ISAE 3402-erklæring type 2 fra en uafhængig revisor.
+
+§ 6 Underleverandører
+Leverandøren må kun anvende underleverandører med Kundens forudgående skriftlige godkendelse, og Leverandøren pålægger underleverandørerne de samme sikkerhedskrav, som gælder efter denne aftale.
+
+§ 7 Varighed og ophør
+Aftalen løber i 48 måneder. Herefter kan hver part opsige den med 6 måneders varsel.
+
+§ 8 Vederlag
+Vederlaget betales månedligt bagud med 30 dages betalingsfrist.
+
+§ 9 Ansvar
+Leverandørens samlede ansvar er begrænset til vederlaget for de seneste 12 måneder.
+
+§ 10 Lovvalg
+Aftalen er underlagt dansk ret. Tvister afgøres ved Retten i Herning.

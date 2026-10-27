@@ -69,3 +69,13 @@ def test_contract_that_points_to_its_dpa_asks_for_it():
     at.selectbox(key="sample").set_value("Balanced AI SaaS agreement (English)").run()
     assert not at.exception
     assert "The data processing agreement is a separate document" in text_of(at)
+
+
+def test_nis2_sample_switches_the_pack_on():
+    at = AppTest.from_file(APP, default_timeout=30).run()
+    at.selectbox(key="sample").set_value("NIS2 contract for a water utility (English)").run()
+    assert not at.exception
+    assert at.toggle(key="nis2").value
+    t = text_of(at)
+    assert "NIS2 supply chain terms" in t and "6 of 8" in t
+    assert "No background checks" in t

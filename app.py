@@ -22,6 +22,7 @@ SAMPLES = {
     "Balanced AI SaaS agreement (English)": "02_nordlys_analytics_saas_EN.txt",
     "Abonnementsaftale (Danish)": "03_klarsprog_abonnementsaftale_DA.txt",
     "DORA contract for an insurer (English)": "06_havbro_claims_ai_DORA_EN.txt",
+    "NIS2 contract for a water utility (English)": "11_vandvagt_ai_monitoring_NIS2_EN.txt",
     "Data processing agreement (English)": "08_nordlys_dpa_EN.txt",
     "Databehandleraftale (Danish)": "09_klarsprog_databehandleraftale_DA.txt",
 }
@@ -44,8 +45,9 @@ R = rules()
 
 
 def sample_changed() -> None:
-    """Switch the DORA option on for the DORA sample, and off for the others."""
+    """Switch the DORA and NIS2 options on for their own samples, and off for the others."""
     st.session_state.dora = list(DORA_OPTIONS)[2 if st.session_state.sample.startswith("DORA") else 0]
+    st.session_state.nis2 = st.session_state.sample.startswith("NIS2")
 
 
 with st.sidebar:
@@ -72,6 +74,12 @@ with st.sidebar:
              "Every AI tool they buy is an ICT service, so its contract must contain the terms in DORA Art. 30.",
     )
     dora = DORA_OPTIONS[dora_choice]
+    nis2 = st.toggle(
+        "Is the customer covered by NIS2?", key="nis2",
+        help="Essential and important entities under NIS2 (in Denmark the NIS2 Act), such as energy, water, transport, "
+             "health and digital infrastructure. Checks the supply chain terms in point 5.1.4 of the Annex to "
+             "Implementing Regulation (EU) 2024/2690.",
+    )
     gdpr = st.toggle(
         "Check the data processing terms (GDPR Art. 28)", value=processes_personal_data(text, R) if text else False,
         key=f"gdpr_{name}",
@@ -93,7 +101,7 @@ if not text.strip():
     st.info("Choose a sample contract or upload one to start.")
     st.stop()
 
-result = analyse(text, R, dora=dora, gdpr=gdpr)
+result = analyse(text, R, dora=dora, gdpr=gdpr, nis2=nis2)
 core = [f for f in result.findings if f.pack == "core"]
 dora_findings = [f for f in result.findings if f.pack == "dora"]
 n = {s: sum(f.severity == s for f in core) for s in SEV}
@@ -163,6 +171,29 @@ if gdpr:
                 st.caption(f"Looked for: {f.looked_for}. Rule: `{f.id}`")
     st.caption("✅ means wording for the term was found, not that it is good enough. Check how fast breaches are "
                "reported and how long deletion takes.")
+
+if nis2:
+    st.divider()
+    nis2_list = result.nis2_checklist(R)
+    covered = sum(ok for _, ok in nis2_list)
+    st.subheader("NIS2 supply chain terms")
+    st.caption("NIS2 Art. 21(2)(d) and point 5.1.4 of the Annex to Implementing Regulation (EU) 2024/2690. Binding for "
+               "digital infrastructure and ICT service providers; for other NIS2 entities the most concrete reading of "
+               "Art. 21(2)(d), to apply where your supply chain risk assessment calls for it.")
+    m1, m2 = st.columns([1, 3])
+    m1.metric("Terms covered", f"{covered} of {len(nis2_list)}")
+    m2.progress(covered / len(nis2_list))
+    st.table({
+        "": ["✅" if ok else "❌" for _, ok in nis2_list],
+        "Term": [k["looked_for"][0].upper() + k["looked_for"][1:] for k, _ in nis2_list],
+        "Reference": [k["ref"] for k, _ in nis2_list],
+    })
+    for f in [f for f in result.findings if f.pack == "nis2"]:
+        icon, label = SEV[f.severity]
+        with st.expander(f"{icon} **{label}** · {f.title}"):
+            st.markdown(f"{f.why}  \n`{f.ref}`")
+            st.caption(f"Looked for: {f.looked_for}. Rule: `{f.id}`")
+    st.caption("❌ means the wording was not found in the main contract text. Check appendices before concluding that a term is missing.")
 
 if dora:
     st.divider()

@@ -17,19 +17,21 @@ Every finding shows the exact sentence it is based on and the rule that produced
 
 **Data processing agreements:** the **GDPR pack** checks the 12 terms a data processing agreement must contain under GDPR Art. 28: processing only on your instructions, staff confidentiality, security, sub-processor approval and flow-down, help with data subject requests and impact assessments, breach notification, deletion or return, audits, and a warning about unlawful instructions. It switches on when a document mentions personal data. Run it on the DPA itself: when a contract points to a DPA in an appendix, the tool says so and asks for the DPA instead of reporting ten gaps.
 
+**For NIS2 entities:** the **NIS2 pack** checks the supplier contract terms behind NIS2 supply chain security (Art. 21(2)(d)), using the eight points in 5.1.4 of the Annex to Implementing Regulation (EU) 2024/2690: security requirements, staff training, background checks, incident notification, audits, vulnerability handling, subcontracting and exit. That list is binding for digital infrastructure and ICT service providers, and the most concrete guide for every other NIS2 entity.
+
 **For banks, insurers and pension funds:** switch on the **DORA pack** to check the contract against the key contractual provisions in DORA Art. 30. Every AI tool a financial entity buys is an ICT service, so its contract must contain them. You get a checklist of all 12 provisions for any ICT service, or 18 for services supporting a critical or important function.
 
 ![DORA checklist](docs/screenshot-dora.png)
 
 ![Screenshot](docs/screenshot.png)
 
-**[Try it live](https://contract-clause-checker.streamlit.app)** with six fictional samples, including a contract for an insurer under DORA and an English and a Danish data processing agreement.
+**[Try it live](https://contract-clause-checker.streamlit.app)** with seven fictional samples, including a contract for an insurer under DORA, one for a water utility under NIS2, and an English and a Danish data processing agreement.
 
 ## Why rules, not an LLM
 
 Same reason as the [EU AI Act Risk Check](https://github.com/gifmaster/ai-act-risk-check): a review tool should be able to show its work.
 
-- Clause types and checks live in readable YAML files: [`clauses.yaml`](src/clausecheck/rules/clauses.yaml), [`checks.yaml`](src/clausecheck/rules/checks.yaml) and the packs [`gdpr.yaml`](src/clausecheck/rules/gdpr.yaml) and [`dora.yaml`](src/clausecheck/rules/dora.yaml)
+- Clause types and checks live in readable YAML files: [`clauses.yaml`](src/clausecheck/rules/clauses.yaml), [`checks.yaml`](src/clausecheck/rules/checks.yaml) and the packs [`gdpr.yaml`](src/clausecheck/rules/gdpr.yaml), [`nis2.yaml`](src/clausecheck/rules/nis2.yaml) and [`dora.yaml`](src/clausecheck/rules/dora.yaml)
 - Every finding cites the sentence behind it
 - Negations are handled: *"shall not use Customer Data to train"* is not flagged, *"may use Customer Data to train"* is
 - Accuracy is measured against hand-labelled contracts and enforced in CI
@@ -58,8 +60,10 @@ A check looks like this:
 | Held-out Danish DORA contract, after three general fixes | 8 of 8 | 1.00 / 1.00 |
 | GDPR pack, 8 development documents (6 contracts, 2 DPAs) | n/a | 1.00 / 1.00 |
 | Held-out DPA in a different drafting style, **first run** | n/a | 1.00 / 1.00 |
+| NIS2 pack, 7 development contracts | n/a | 1.00 / 1.00 |
+| Held-out Danish NIS2 contract, **first run** | n/a | 1.00 / 1.00, one of them by luck (see below) |
 
-The GDPR held-out DPA passed on its first run, including a planted trap (breaches "handled as set out in Annex II" with no duty to tell you). It was written by the same author as the rules, so it is a weaker test than a real contract. Each earlier held-out test found real weaknesses: a heading style the rules did not know, and short numbered sub-clauses that were read as headings and never checked. They were fixed in general terms and are now regression tests. Small fictional test set, so treat the numbers as a floor for known patterns, not a promise for every contract. Details in [docs/METHOD.md](docs/METHOD.md).
+The NIS2 held-out contract also scored 1.00 on its first run, but a unit test then showed that one result was luck: the rule did not understand the Danish compound *sikkerhedshændelse*, and only matched because the heading *Hændelser* sat next to *uden unødig forsinkelse*. Danish compounds are now matched by their last part. The GDPR held-out DPA passed on its first run, including a planted trap (breaches "handled as set out in Annex II" with no duty to tell you). It was written by the same author as the rules, so it is a weaker test than a real contract. Each earlier held-out test found real weaknesses: a heading style the rules did not know, and short numbered sub-clauses that were read as headings and never checked. They were fixed in general terms and are now regression tests. Small fictional test set, so treat the numbers as a floor for known patterns, not a promise for every contract. Details in [docs/METHOD.md](docs/METHOD.md).
 
 ## Run it locally
 
@@ -87,6 +91,11 @@ result = analyse(read_file("contract.pdf"), dora="critical")
 for check, covered in result.dora_checklist(Rules.builtin()):
     print("covered" if covered else "NOT FOUND", check["ref"], check["looked_for"])
 
+# NIS2 supply chain terms (Art. 21(2)(d), Impl. Reg. (EU) 2024/2690 Annex 5.1.4)
+result = analyse(read_file("contract.pdf"), nis2=True)
+for check, covered in result.nis2_checklist(Rules.builtin()):
+    print("covered" if covered else "NOT FOUND", check["ref"], check["looked_for"])
+
 # GDPR Art. 28: the terms a data processing agreement must contain
 result = analyse(read_file("dpa.pdf"), gdpr=True)
 print(result.dpa_elsewhere)   # True when the document points to a DPA kept in another document
@@ -101,7 +110,7 @@ pip install pytest
 pytest
 ```
 
-115 tests: segmentation, negation and consent handling, rule validation, the GDPR and DORA packs, accuracy against labelled contracts, identical results from PDF, Word and text, and app smoke tests.
+144 tests: segmentation, negation and consent handling, rule validation, the GDPR, NIS2 and DORA packs, accuracy against labelled contracts, identical results from PDF, Word and text, and app smoke tests.
 
 ## Part of a toolkit
 
@@ -115,7 +124,7 @@ pytest
 
 ## Limitations
 
-A screening aid for contract review, not legal advice. It needs headings to split clauses, does not read appendices, and covers the customer's side of AI and SaaS contracts. The GDPR and DORA packs check that a term is there, not that it is good enough. See [docs/METHOD.md](docs/METHOD.md).
+A screening aid for contract review, not legal advice. It needs headings to split clauses, does not read appendices, and covers the customer's side of AI and SaaS contracts. The GDPR, NIS2 and DORA packs check that a term is there, not that it is good enough. See [docs/METHOD.md](docs/METHOD.md).
 
 ## About
 

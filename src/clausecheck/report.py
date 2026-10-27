@@ -68,6 +68,19 @@ def to_markdown(result: Result, rules: Rules, name: str = "", today: date | None
             lines.append(f"| {'Covered' if ok else '**Not found**'} | {k['looked_for'][0].upper() + k['looked_for'][1:]} | {k['ref']} | {SEV_LABEL[k['severity']]} |")
         lines += ["", "*Covered means wording for the term was found. It does not mean the wording is good enough, "
                   "for example how fast breaches are reported.*", ""]
+    nis2 = result.nis2_checklist(rules)
+    if nis2:
+        covered = sum(ok for _, ok in nis2)
+        lines += ["## NIS2 supply chain terms", "",
+                  f"Checked against NIS2 Art. 21(2)(d) and point 5.1.4 of the Annex to Implementing Regulation (EU) 2024/2690. "
+                  f"Covered in the main text: **{covered} of {len(nis2)}**.", "",
+                  "| | Term | Reference | Severity if missing |", "|---|---|---|---|"]
+        for k, ok in nis2:
+            lines.append(f"| {'Covered' if ok else '**Not found**'} | {k['looked_for'][0].upper() + k['looked_for'][1:]} | {k['ref']} | {SEV_LABEL[k['severity']]} |")
+        lines += ["", "*The list in Implementing Regulation (EU) 2024/2690 is binding for digital infrastructure and ICT service "
+                  "providers such as cloud, data centres and managed service providers. For other NIS2 entities it is the most "
+                  "concrete reading of Art. 21(2)(d), to apply where your supply chain risk assessment calls for it. "
+                  "Check appendices before concluding that a term is missing.*", ""]
     checklist = result.dora_checklist(rules)
     if checklist:
         covered = sum(ok for _, ok in checklist)
