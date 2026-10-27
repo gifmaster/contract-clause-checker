@@ -4,10 +4,16 @@
 # clauses:  clause type -> heading of the clause where it should be found
 # findings: check ids that should fire. Every other check should stay silent.
 # values:   key values that should be extracted
+# gdpr:     GDPR Art. 28 pack checks that should fire (the pack is run on every sample). The others should stay silent.
+# dpa_elsewhere: whether the document points to a data processing agreement kept in a separate document
+# kind:     'dpa' for a stand-alone data processing agreement: only the GDPR pack is scored, since the
+#           contract checks (liability, termination, ...) are not meant for a DPA on its own.
 # dora:     DORA checks (level "critical", Art. 30(2) and (3)) that should fire. The others should stay silent.
 
 samples:
   01_brightloop_ai_terms_EN.txt:
+    gdpr: [gdpr_processing_details, gdpr_instructions, gdpr_staff_confidentiality, gdpr_security, gdpr_subprocessor_approval, gdpr_subprocessor_flowdown, gdpr_data_subject_rights, gdpr_breach_notification, gdpr_controller_assistance, gdpr_deletion_return, gdpr_audit, gdpr_unlawful_instruction]
+    dpa_elsewhere: false
     clauses:
       ai_use: "3. Use of Customer Data"
       payment: "4. Fees and Payment"
@@ -28,6 +34,8 @@ samples:
       notice_periods: ["30 days", "90 days"]
 
   02_nordlys_analytics_saas_EN.txt:
+    gdpr: [gdpr_processing_details, gdpr_instructions, gdpr_staff_confidentiality, gdpr_security, gdpr_subprocessor_flowdown, gdpr_data_subject_rights, gdpr_breach_notification, gdpr_controller_assistance, gdpr_audit, gdpr_unlawful_instruction]
+    dpa_elsewhere: true
     clauses:
       term: "2. Term"
       termination: "3. Termination"
@@ -51,6 +59,8 @@ samples:
       uptime: "99.5%"
 
   03_klarsprog_abonnementsaftale_DA.txt:
+    gdpr: [gdpr_processing_details, gdpr_instructions, gdpr_staff_confidentiality, gdpr_security, gdpr_subprocessor_approval, gdpr_subprocessor_flowdown, gdpr_data_subject_rights, gdpr_breach_notification, gdpr_controller_assistance, gdpr_deletion_return, gdpr_audit, gdpr_unlawful_instruction]
+    dpa_elsewhere: true
     clauses:
       term: "2. Løbetid og fornyelse"
       termination: "3. Opsigelse og ophævelse"
@@ -73,6 +83,8 @@ samples:
   # Written after the rules were finalised as a held-out test. First run exposed two general gaps
   # (SECTION-style headings, plain-English headings); see docs/METHOD.md. Now part of the regression set.
   holdout/05_quillstack_terms_EN.txt:
+    gdpr: [gdpr_processing_details, gdpr_instructions, gdpr_staff_confidentiality, gdpr_security, gdpr_subprocessor_approval, gdpr_subprocessor_flowdown, gdpr_data_subject_rights, gdpr_breach_notification, gdpr_controller_assistance, gdpr_deletion_return, gdpr_audit, gdpr_unlawful_instruction]
+    dpa_elsewhere: true
     clauses:
       ai_use: "SECTION 2. YOUR CONTENT"
       payment: "SECTION 3. CHARGES"
@@ -91,6 +103,8 @@ samples:
 
   # A contract written to meet DORA Art. 30, with two gaps planted on purpose (TLPT and training).
   06_havbro_claims_ai_DORA_EN.txt:
+    gdpr: [gdpr_processing_details, gdpr_instructions, gdpr_staff_confidentiality, gdpr_subprocessor_flowdown, gdpr_data_subject_rights, gdpr_breach_notification, gdpr_controller_assistance, gdpr_unlawful_instruction]
+    dpa_elsewhere: true
     clauses:
       term: "2. Term"
       termination: "3. Termination"
@@ -112,6 +126,8 @@ samples:
   # Danish DORA contract written after the DORA rules were locked, as a held-out test.
   # First run: 3 false DORA findings and one missed clause, from three general gaps; see docs/METHOD.md.
   holdout/07_dataskov_pension_ai_DA.txt:
+    gdpr: [gdpr_processing_details, gdpr_instructions, gdpr_staff_confidentiality, gdpr_subprocessor_flowdown, gdpr_data_subject_rights, gdpr_controller_assistance, gdpr_deletion_return, gdpr_unlawful_instruction]
+    dpa_elsewhere: true
     clauses:
       termination: "2. Aftalens varighed og opsigelse"
       service_levels: "3. Driftsstabilitet og servicemål"
@@ -127,3 +143,25 @@ samples:
       governing_law: Denmark
       auto_renewal: false
       uptime: "99.8%"
+
+  # A complete-looking English DPA (Appendix 3 to the Nordlys agreement), with two gaps planted on purpose:
+  # no assistance with impact assessments and prior consultation, no duty to flag unlawful instructions.
+  08_nordlys_dpa_EN.txt:
+    kind: dpa
+    gdpr: [gdpr_controller_assistance, gdpr_unlawful_instruction]
+    dpa_elsewhere: false
+
+  # Danish databehandleraftale with one planted gap: sub-processors are approved, but nothing passes the
+  # same data protection obligations on to them (Art. 28(4)).
+  09_klarsprog_databehandleraftale_DA.txt:
+    kind: dpa
+    gdpr: [gdpr_subprocessor_flowdown]
+    dpa_elsewhere: false
+
+  # Held-out DPA in the style of the Commission's standard clauses, written before the GDPR rules and run once.
+  # Two planted gaps: no confidentiality duty for staff, and breaches are "handled as set out in Annex II"
+  # with no duty to notify the controller.
+  holdout/10_tidevand_processing_terms_EN.txt:
+    kind: dpa
+    gdpr: [gdpr_staff_confidentiality, gdpr_breach_notification]
+    dpa_elsewhere: false

@@ -13,7 +13,7 @@ import streamlit as st
 ROOT = Path(__file__).parent
 sys.path.insert(0, str(ROOT / "src"))
 
-from clausecheck import Rules, analyse, read_bytes, to_csv, to_markdown  # noqa: E402
+from clausecheck import Rules, analyse, processes_personal_data, read_bytes, to_csv, to_markdown  # noqa: E402
 from clausecheck.report import VALUE_LABELS, format_value  # noqa: E402
 
 REPO_URL = "https://github.com/gifmaster/contract-clause-checker"
@@ -22,6 +22,8 @@ SAMPLES = {
     "Balanced AI SaaS agreement (English)": "02_nordlys_analytics_saas_EN.txt",
     "Abonnementsaftale (Danish)": "03_klarsprog_abonnementsaftale_DA.txt",
     "DORA contract for an insurer (English)": "06_havbro_claims_ai_DORA_EN.txt",
+    "Data processing agreement (English)": "08_nordlys_dpa_EN.txt",
+    "Databehandleraftale (Danish)": "09_klarsprog_databehandleraftale_DA.txt",
 }
 DORA_OPTIONS = {
     "No": None,
@@ -70,6 +72,12 @@ with st.sidebar:
              "Every AI tool they buy is an ICT service, so its contract must contain the terms in DORA Art. 30.",
     )
     dora = DORA_OPTIONS[dora_choice]
+    gdpr = st.toggle(
+        "Check the data processing terms (GDPR Art. 28)", value=processes_personal_data(text, R) if text else False,
+        key=f"gdpr_{name}",
+        help="Switched on when the document mentions personal data. Checks the 12 terms a data processing agreement "
+             "must contain. Works best on the data processing agreement itself.",
+    )
     st.divider()
     st.markdown(
         f"**How it works.** The contract is split into clauses, each clause is matched against "
@@ -85,7 +93,7 @@ if not text.strip():
     st.info("Choose a sample contract or upload one to start.")
     st.stop()
 
-result = analyse(text, R, dora=dora)
+result = analyse(text, R, dora=dora, gdpr=gdpr)
 core = [f for f in result.findings if f.pack == "core"]
 dora_findings = [f for f in result.findings if f.pack == "dora"]
 n = {s: sum(f.severity == s for f in core) for s in SEV}
@@ -100,6 +108,9 @@ left, right = st.columns([3, 2], gap="large")
 
 with left:
     st.subheader("Findings")
+    if result.is_dpa:
+        st.info("This looks like a data processing agreement on its own. Only the contract checks that matter for a DPA "
+                "are shown here. Check liability, termination and governing law in the main agreement.")
     if not core:
         st.success("No issues flagged by the checks. Still read the contract: the checks cover common risks, not everything.")
     for f in core:
@@ -125,6 +136,33 @@ with right:
                        file_name="contract-review.md", mime="text/markdown", width="stretch")
     st.download_button("Download clause table (CSV)", to_csv(result, R),
                        file_name="contract-clauses.csv", mime="text/csv", width="stretch")
+
+if gdpr:
+    st.divider()
+    gdpr_list = result.gdpr_checklist(R)
+    covered = sum(ok for _, ok in gdpr_list)
+    st.subheader("GDPR data processing terms")
+    st.caption("Regulation (EU) 2016/679, Art. 28(2) to (4): what a data processing agreement must contain.")
+    if result.dpa_elsewhere:
+        st.info("**The data processing agreement is a separate document.** This contract points to it, so most of these "
+                "terms are expected there. Upload the data processing agreement to check it. The list below is for this "
+                "document only.")
+    m1, m2 = st.columns([1, 3])
+    m1.metric("Terms covered", f"{covered} of {len(gdpr_list)}")
+    m2.progress(covered / len(gdpr_list))
+    st.table({
+        "": ["✅" if ok else "❌" for _, ok in gdpr_list],
+        "Term": [k["looked_for"][0].upper() + k["looked_for"][1:] for k, _ in gdpr_list],
+        "Reference": [k["ref"] for k, _ in gdpr_list],
+    })
+    if not result.dpa_elsewhere:
+        for f in [f for f in result.findings if f.pack == "gdpr"]:
+            icon, label = SEV[f.severity]
+            with st.expander(f"{icon} **{label}** · {f.title}"):
+                st.markdown(f"{f.why}  \n`{f.ref}`")
+                st.caption(f"Looked for: {f.looked_for}. Rule: `{f.id}`")
+    st.caption("✅ means wording for the term was found, not that it is good enough. Check how fast breaches are "
+               "reported and how long deletion takes.")
 
 if dora:
     st.divider()

@@ -54,6 +54,9 @@ class Result:
     findings: list[Finding]
     language: str
     dora: str | None = None
+    gdpr: bool = False
+    dpa_elsewhere: bool = False
+    is_dpa: bool = False  # the document is a data processing agreement on its own
 
     def dora_checklist(self, rules: "Rules") -> list[tuple[dict, bool]]:
         """Each DORA check that ran, with True when the contract covers it."""
@@ -62,12 +65,20 @@ class Result:
         fired = {f.id for f in self.findings}
         return [(k, k["id"] not in fired) for k in rules.dora if k["level"] in DORA_LEVELS[self.dora]]
 
+    def gdpr_checklist(self, rules: "Rules") -> list[tuple[dict, bool]]:
+        """Each GDPR Art. 28 check, with True when the document covers it. Empty when the pack did not run."""
+        if not self.gdpr:
+            return []
+        fired = {f.id for f in self.findings}
+        return [(k, k["id"] not in fired) for k in rules.gdpr]
+
     def found(self, clause_id: str) -> bool:
         return bool(self.clauses.get(clause_id))
 
 
 SEVERITY_ORDER = {"high": 0, "medium": 1, "low": 2}
 DORA_LEVELS = {"all": ("all",), "critical": ("all", "critical")}  # which check levels run for each choice
+DPA_ITSELF = 6  # a document covering at least this many Art. 28 terms is treated as a DPA in its own right
 
 # --------------------------------------------------------------------------- #
 # Rules
@@ -75,7 +86,7 @@ DORA_LEVELS = {"all": ("all",), "critical": ("all", "critical")}  # which check 
 
 
 class Rules:
-    def __init__(self, clauses: dict, checks: dict, dora: dict | None = None):
+    def __init__(self, clauses: dict, checks: dict, dora: dict | None = None, gdpr: dict | None = None):
         self.min_score = clauses.get("min_score", 3)
         self.clauses = clauses["clauses"]
         self.labels = {c["id"]: c["label"] for c in self.clauses}
@@ -85,17 +96,23 @@ class Rules:
         self.dora = (dora or {}).get("checks", [])
         for k in self.dora:
             k["pack"] = "dora"
+        self.gdpr = (gdpr or {}).get("checks", [])
+        for k in self.gdpr:
+            k["pack"] = "gdpr"
+        self.dpa_elsewhere = [re.compile(p, FLAGS) for p in (gdpr or {}).get("dpa_elsewhere", [])]
+        no_dpa = next((k for k in self.checks if k["id"] == "no_dpa"), {})
+        self.personal_data = [re.compile(p, FLAGS) for p in no_dpa.get("if_any", [])]
         self._compile()
         self._validate()
 
     @classmethod
     def builtin(cls) -> "Rules":
         load = lambda n: yaml.safe_load((RULES_DIR / n).read_text(encoding="utf-8"))  # noqa: E731
-        return cls(load("clauses.yaml"), load("checks.yaml"), load("dora.yaml"))
+        return cls(load("clauses.yaml"), load("checks.yaml"), load("dora.yaml"), load("gdpr.yaml"))
 
     @property
     def all_checks(self) -> list[dict]:
-        return self.checks + self.dora
+        return self.checks + self.dora + self.gdpr
 
     def _compile(self) -> None:
         for c in self.clauses:
@@ -110,11 +127,10 @@ class Rules:
         ids = set(self.labels)
         seen = set()
         for k in self.all_checks:
-            if k.get("pack") == "dora":
-                if k.get("level") not in DORA_LEVELS:
-                    raise ValueError(f"DORA check {k['id']} needs level 'all' or 'critical'")
-                if not k.get("looked_for"):
-                    raise ValueError(f"DORA check {k['id']} is missing 'looked_for'")
+            if k.get("pack") == "dora" and k.get("level") not in DORA_LEVELS:
+                raise ValueError(f"DORA check {k['id']} needs level 'all' or 'critical'")
+            if k.get("pack") in ("dora", "gdpr") and not k.get("looked_for"):
+                raise ValueError(f"{k['pack'].upper()} check {k['id']} is missing 'looked_for'")
             if k["id"] in seen:
                 raise ValueError(f"Duplicate check id {k['id']}")
             seen.add(k["id"])
@@ -302,11 +318,12 @@ def _short(s: str, n: int = 260) -> str:
     return s if len(s) <= n else s[: n - 1] + "…"
 
 
-def run_checks(result: Result, text: str, rules: Rules, dora: str | None = None) -> list[Finding]:
-    """Run the core checks, plus the DORA pack when ``dora`` is "all" or "critical"."""
+def run_checks(result: Result, text: str, rules: Rules, dora: str | None = None, gdpr: bool = False) -> list[Finding]:
+    """Run the core checks, plus the DORA pack when ``dora`` is "all" or "critical", plus the GDPR pack when ``gdpr``."""
     if dora not in (None, *DORA_LEVELS):
         raise ValueError(f"dora must be None, 'all' or 'critical', not {dora!r}")
     checks = rules.checks + ([k for k in rules.dora if k["level"] in DORA_LEVELS[dora]] if dora else [])
+    checks += rules.gdpr if gdpr else []
     findings = []
     for k in checks:
         t, evidence, fire = k["type"], [], False
@@ -343,7 +360,7 @@ def run_checks(result: Result, text: str, rules: Rules, dora: str | None = None)
         if fire:
             findings.append(Finding(k["id"], k["severity"], k["title"], k["why"], k["ref"], evidence[:3],
                                     k["pack"], k.get("looked_for", "")))
-    findings.sort(key=lambda f: (f.pack != "core", SEVERITY_ORDER[f.severity]))
+    findings.sort(key=lambda f: (("core", "gdpr", "dora").index(f.pack), SEVERITY_ORDER[f.severity]))
     return findings
 
 
@@ -355,11 +372,18 @@ DA_WORDS = re.compile(r"\b(og|ikke|skal|aftale|leverandøren|kunden|af|til|eller
 EN_WORDS = re.compile(r"\b(and|not|shall|agreement|the|of|to|or|this|customer)\b", FLAGS)
 
 
-def analyse(text: str, rules: Rules | None = None, dora: str | None = None) -> Result:
+def processes_personal_data(text: str, rules: Rules | None = None) -> bool:
+    """True when the text mentions personal data, so the GDPR pack is worth running."""
+    rules = rules or Rules.builtin()
+    return any(p.search(text) for p in rules.personal_data)
+
+
+def analyse(text: str, rules: Rules | None = None, dora: str | None = None, gdpr: bool = False) -> Result:
     """Analyse a contract.
 
     dora: None (default) runs the core checks only. "all" adds the DORA Art. 30(2) checks for any
     ICT service used by a financial entity, "critical" adds Art. 30(3) for critical or important functions.
+    gdpr: True adds the GDPR Art. 28 checks for the terms a data processing agreement must contain.
     """
     rules = rules or Rules.builtin()
     segs = segment(text)
@@ -369,6 +393,15 @@ def analyse(text: str, rules: Rules | None = None, dora: str | None = None) -> R
         if s.clause:
             clauses.setdefault(s.clause, []).append(s)
     lang = "da" if len(DA_WORDS.findall(text)) > len(EN_WORDS.findall(text)) else "en"
-    result = Result(segs, clauses, extract_values(text, clauses), [], lang, dora)
-    result.findings = run_checks(result, text, rules, dora)
+    result = Result(segs, clauses, extract_values(text, clauses), [], lang, dora, gdpr)
+    result.findings = run_checks(result, text, rules, dora, gdpr)
+    if gdpr:
+        covered = sum(ok for _, ok in result.gdpr_checklist(rules))
+        points_away = any(p.search(sent) for p in rules.dpa_elsewhere for sent in _scope_sentences(result, "all"))
+        result.dpa_elsewhere = points_away and covered < DPA_ITSELF
+        result.is_dpa = covered >= DPA_ITSELF and not points_away
+        if result.is_dpa:
+            # A DPA is not a full contract: liability, termination and the like belong in the main agreement.
+            keep = {k["id"] for k in rules.checks if k.get("in_dpa")}
+            result.findings = [f for f in result.findings if f.pack != "core" or f.id in keep]
     return result

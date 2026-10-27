@@ -14,7 +14,8 @@ from clausecheck import Rules, analyse, read_file
 ROOT = Path(__file__).parents[1]
 TRUTH = yaml.safe_load((Path(__file__).parent / "ground_truth.yaml").read_text(encoding="utf-8"))["samples"]
 RULES = Rules.builtin()
-RESULTS = {name: analyse(read_file(ROOT / "samples" / name), RULES, dora="critical") for name in TRUTH}
+RESULTS = {name: analyse(read_file(ROOT / "samples" / name), RULES, dora="critical", gdpr=True) for name in TRUTH}
+CONTRACTS = [n for n, t in TRUTH.items() if t.get("kind") != "dpa"]  # stand-alone DPAs are scored on the GDPR pack only
 
 
 def core(result):
@@ -25,7 +26,11 @@ def dora(result):
     return {f.id for f in result.findings if f.pack == "dora"}
 
 
-@pytest.mark.parametrize("name", TRUTH)
+def gdpr(result):
+    return {f.id for f in result.findings if f.pack == "gdpr"}
+
+
+@pytest.mark.parametrize("name", CONTRACTS)
 def test_clauses_found_where_expected(name):
     result = RESULTS[name]
     for clause, heading in TRUTH[name]["clauses"].items():
@@ -33,25 +38,37 @@ def test_clauses_found_where_expected(name):
         assert heading in headings, f"{name}: {clause} expected at '{heading}', found {headings}"
 
 
-@pytest.mark.parametrize("name", TRUTH)
+@pytest.mark.parametrize("name", CONTRACTS)
 def test_findings_exactly_as_labelled(name):
     got = core(RESULTS[name])
     want = set(TRUTH[name]["findings"])
     assert got == want, f"{name}: missing {want - got}, unexpected {got - want}"
 
 
-@pytest.mark.parametrize("name", TRUTH)
+@pytest.mark.parametrize("name", CONTRACTS)
 def test_dora_findings_exactly_as_labelled(name):
     got = dora(RESULTS[name])
     want = set(TRUTH[name]["dora"])
     assert got == want, f"{name}: missing {want - got}, unexpected {got - want}"
 
 
-@pytest.mark.parametrize("name", TRUTH)
+@pytest.mark.parametrize("name", CONTRACTS)
 def test_values_extracted(name):
     values = RESULTS[name].values
     for key, want in TRUTH[name]["values"].items():
         assert values.get(key) == want, f"{name}: {key} expected {want!r}, got {values.get(key)!r}"
+
+
+@pytest.mark.parametrize("name", TRUTH)
+def test_gdpr_findings_exactly_as_labelled(name):
+    got = gdpr(RESULTS[name])
+    want = set(TRUTH[name]["gdpr"])
+    assert got == want, f"{name}: missing {want - got}, unexpected {got - want}"
+
+
+@pytest.mark.parametrize("name", TRUTH)
+def test_separate_dpa_is_recognised(name):
+    assert RESULTS[name].dpa_elsewhere == TRUTH[name]["dpa_elsewhere"], name
 
 
 def test_overall_precision_and_recall():
@@ -59,13 +76,17 @@ def test_overall_precision_and_recall():
     tp = fp = fn = 0
     for name, truth in TRUTH.items():
         result = RESULTS[name]
+        if truth.get("kind") == "dpa":
+            fw, gw = set(truth["gdpr"]), gdpr(result)
+            tp, fn, fp = tp + len(fw & gw), fn + len(fw - gw), fp + len(gw - fw)
+            continue
         want = {(c, h) for c, h in truth["clauses"].items()}
         got = {(s.clause, s.heading) for s in result.segments if s.clause}
         # a clause counts as correct if the labelled heading was found for that type
         tp += len(want & got)
         fn += len(want - got)
         fp += len({g for g in got if g[0] not in truth["clauses"]})
-        fw, gw = set(truth["findings"]) | set(truth["dora"]), {f.id for f in result.findings}
+        fw, gw = set(truth["findings"]) | set(truth["dora"]) | set(truth["gdpr"]), {f.id for f in result.findings}
         tp += len(fw & gw)
         fn += len(fw - gw)
         fp += len(gw - fw)
@@ -85,6 +106,6 @@ def test_every_finding_has_evidence_or_is_a_missing_clause():
 def test_same_result_from_pdf_and_word(fmt):
     """The same contract as PDF or Word must give the same findings and key terms as plain text."""
     base = RESULTS["01_brightloop_ai_terms_EN.txt"]
-    other = analyse(read_file(ROOT / "samples" / f"04_brightloop_ai_terms_EN.{fmt}"), RULES, dora="critical")
+    other = analyse(read_file(ROOT / "samples" / f"04_brightloop_ai_terms_EN.{fmt}"), RULES, dora="critical", gdpr=True)
     assert {f.id for f in other.findings} == {f.id for f in base.findings}
     assert {k: v for k, v in other.values.items() if k != "liability_cap"} == {k: v for k, v in base.values.items() if k != "liability_cap"}

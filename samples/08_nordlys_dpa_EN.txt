@@ -1,0 +1,38 @@
+APPENDIX 3
+DATA PROCESSING AGREEMENT
+
+Between Nordlys Analytics ApS ("Processor") and the customer under the SaaS Agreement ("Controller"). This is a fictional sample for demonstration purposes. It is Appendix 3 to the Nordlys SaaS Agreement.
+
+1. Subject Matter and Duration
+The Processor processes personal data on behalf of the Controller to provide the Service described in the SaaS Agreement, for as long as the SaaS Agreement is in force.
+
+2. Nature and Purpose of the Processing
+The Service drafts answers to customer enquiries. The processing consists of storing and analysing enquiries and generating draft answers, for the purpose of helping the Controller's staff answer enquiries.
+
+3. Types of Personal Data and Categories of Data Subjects
+The types of personal data are name, email address, customer number and the content of enquiries. The categories of data subjects are the Controller's customers and the Controller's employees who use the Service.
+
+4. Instructions
+The Processor processes personal data only on documented instructions from the Controller. This Agreement and the SaaS Agreement are the Controller's complete instructions. Personal data is not transferred outside the EU/EEA without the Controller's prior written approval and standard contractual clauses.
+
+5. Confidentiality
+The Processor ensures that employees and other persons authorised to process the personal data have committed themselves to confidentiality or are under an appropriate statutory obligation of confidentiality.
+
+6. Security of Processing
+The Processor implements the technical and organisational measures required by Article 32 of the GDPR, as described in Annex A, including encryption in transit and at rest, access control and logging.
+
+7. Sub-processors
+7.1 The Controller gives general written authorisation for the Processor to use the sub-processors listed in Annex B. The Processor will notify the Controller at least thirty (30) days before adding or replacing a sub-processor, and the Controller may object to the change.
+7.2 The Processor imposes the same data protection obligations as set out in this Agreement on each sub-processor by written contract, and remains fully liable to the Controller for the performance of each sub-processor.
+
+8. Data Subject Rights
+The Processor assists the Controller by appropriate technical and organisational measures in responding to requests from data subjects who exercise their rights under Chapter III of the GDPR.
+
+9. Personal Data Breaches
+The Processor notifies the Controller without undue delay, and no later than forty-eight (48) hours after becoming aware of it, of any personal data breach, and provides the information the Controller needs to meet its own notification duties.
+
+10. Deletion and Return
+When the SaaS Agreement ends, the Processor deletes or returns all personal data to the Controller, at the Controller's choice, and deletes existing copies unless Union or Member State law requires storage.
+
+11. Audits
+The Processor makes available to the Controller all information necessary to demonstrate compliance with Article 28 of the GDPR and allows for and contributes to audits, including inspections, conducted by the Controller or an auditor mandated by the Controller.
