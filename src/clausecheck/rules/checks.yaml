@@ -13,14 +13,15 @@
 
 checks:
   - id: ai_training_on_data
+    in_dpa: true  # still relevant when the document is a data processing agreement on its own
     severity: high
     title: Vendor may use your data to train or improve its models
     type: match
     scope: all
     pattern:
-      - '\b(us(e|es|ed|ing)|process|analy[sz]|access)\w*\b[^.]{0,80}\b(customer data|your data|client data|content|inputs?|prompts?|data you (submit|provide))\b[^.]{0,140}\b(train|improv|develop|enhanc|fine-?tun)\w*'
-      - '\b(train|improv|develop|enhanc|fine-?tun)\w*\b[^.]{0,60}\b(models?|AI|algorithms?|machine learning)\b[^.]{0,100}\b(customer data|your data|inputs?|prompts?|content)\b'
-      - '\b(anvende|bruge|behandle|benytte)\w*\b[^.]{0,80}\b(kundens data|kundedata|data|indhold|input)\b[^.]{0,140}\b(træn|forbedr|udvikl|videreudvikl)\w*'
+      - '\b(us(e|es|ed|ing)|process|analy[sz]|access)\w*\b[^.]{0,80}\b(customer data|your data|client data|personal data|content|inputs?|prompts?|data you (submit|provide))\b[^.]{0,140}\b(train|improv|develop|enhanc|fine-?tun)\w*'
+      - '\b(train|improv|develop|enhanc|fine-?tun)\w*\b[^.]{0,60}\b(models?|AI|algorithms?|machine learning)\b[^.]{0,100}\b(customer data|your data|personal data|inputs?|prompts?|content)\b'
+      - '\b(anvende|bruge|behandle|benytte)\w*\b[^.]{0,80}\b(kundens data|kundedata|data|personoplysninger|indhold|input)\b[^.]{0,140}\b(træn|forbedr|udvikl|videreudvikl)\w*'
     unless: ['\b(not|never|no)\b', "n't\\b", '\b(prior|written|express|explicit|separate)\s+(written\s+)?consent', '\b(ikke|aldrig|ingen)\b', '(forudgående|skriftligt|udtrykkeligt|særskilt)\s+samtykke']
     why: Your data, including personal or confidential information, could end up in a model that serves other customers. It may also make the vendor a controller for that processing under GDPR.
     ref: GDPR Art. 5(1)(b), 28; trade secrets
@@ -52,6 +53,7 @@ checks:
     ref: GDPR Art. 28
 
   - id: transfer_without_safeguards
+    in_dpa: true  # still relevant when the document is a data processing agreement on its own
     severity: medium
     title: Data may leave the EU without stated safeguards
     type: requires

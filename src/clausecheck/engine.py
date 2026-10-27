@@ -56,6 +56,7 @@ class Result:
     dora: str | None = None
     gdpr: bool = False
     dpa_elsewhere: bool = False
+    is_dpa: bool = False  # the document is a data processing agreement on its own
 
     def dora_checklist(self, rules: "Rules") -> list[tuple[dict, bool]]:
         """Each DORA check that ran, with True when the contract covers it."""
@@ -398,4 +399,9 @@ def analyse(text: str, rules: Rules | None = None, dora: str | None = None, gdpr
         covered = sum(ok for _, ok in result.gdpr_checklist(rules))
         points_away = any(p.search(sent) for p in rules.dpa_elsewhere for sent in _scope_sentences(result, "all"))
         result.dpa_elsewhere = points_away and covered < DPA_ITSELF
+        result.is_dpa = covered >= DPA_ITSELF and not points_away
+        if result.is_dpa:
+            # A DPA is not a full contract: liability, termination and the like belong in the main agreement.
+            keep = {k["id"] for k in rules.checks if k.get("in_dpa")}
+            result.findings = [f for f in result.findings if f.pack != "core" or f.id in keep]
     return result

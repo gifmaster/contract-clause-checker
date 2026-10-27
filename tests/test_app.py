@@ -52,3 +52,20 @@ def test_dora_switch_on_risky_sample():
     at.radio(key="dora").set_value("Yes, an ICT service").run()
     assert not at.exception
     assert "2 of 12" in text_of(at)
+
+
+def test_dpa_sample_shows_gdpr_checklist():
+    at = AppTest.from_file(APP, default_timeout=30).run()
+    at.selectbox(key="sample").set_value("Data processing agreement (English)").run()
+    assert not at.exception
+    t = text_of(at)
+    assert "GDPR data processing terms" in t and "10 of 12" in t
+    assert "looks like a data processing agreement" in t
+    assert "No liability clause" not in t  # contract-only checks are not shown for a DPA
+
+
+def test_contract_that_points_to_its_dpa_asks_for_it():
+    at = AppTest.from_file(APP, default_timeout=30).run()
+    at.selectbox(key="sample").set_value("Balanced AI SaaS agreement (English)").run()
+    assert not at.exception
+    assert "The data processing agreement is a separate document" in text_of(at)

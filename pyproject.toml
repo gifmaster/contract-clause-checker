@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "clausecheck"
-version = "0.1.0"
+version = "0.3.0"
 description = "Transparent, rule-based clause extraction and risk checks for AI and SaaS vendor contracts"
 readme = "README.md"
 requires-python = ">=3.10"

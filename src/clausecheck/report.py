@@ -45,6 +45,9 @@ def to_markdown(result: Result, rules: Rules, name: str = "", today: date | None
         if k in result.values:
             lines.append(f"- **{label}:** {format_value(k, result.values[k])}")
     lines += ["", "## Findings", ""]
+    if result.is_dpa:
+        lines += ["*This document is a data processing agreement on its own, so only the contract checks that matter for a DPA "
+                  "are shown. Liability, termination and governing law belong in the main agreement.*", ""]
     if not core:
         lines.append("No issues flagged by the checks.")
     for f in core:
@@ -52,6 +55,19 @@ def to_markdown(result: Result, rules: Rules, name: str = "", today: date | None
         for e in f.evidence:
             lines.append(f"> {e}")
             lines.append("")
+    gdpr = result.gdpr_checklist(rules)
+    if gdpr:
+        covered = sum(ok for _, ok in gdpr)
+        lines += ["## GDPR data processing terms", "",
+                  f"Checked against GDPR Art. 28(2) to (4). Covered in this document: **{covered} of {len(gdpr)}**.", ""]
+        if result.dpa_elsewhere:
+            lines += ["> **The data processing agreement is a separate document.** This contract points to it, so these terms "
+                      "are expected there. Run the check on the data processing agreement itself.", ""]
+        lines += ["| | Term | Reference | Severity if missing |", "|---|---|---|---|"]
+        for k, ok in gdpr:
+            lines.append(f"| {'Covered' if ok else '**Not found**'} | {k['looked_for'][0].upper() + k['looked_for'][1:]} | {k['ref']} | {SEV_LABEL[k['severity']]} |")
+        lines += ["", "*Covered means wording for the term was found. It does not mean the wording is good enough, "
+                  "for example how fast breaches are reported.*", ""]
     checklist = result.dora_checklist(rules)
     if checklist:
         covered = sum(ok for _, ok in checklist)

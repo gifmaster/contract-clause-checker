@@ -10,6 +10,31 @@
 
 All patterns cover English and Danish.
 
+## GDPR pack
+
+When a vendor processes personal data on your behalf, GDPR Art. 28 requires a contract with specific terms. The pack in [`rules/gdpr.yaml`](../src/clausecheck/rules/gdpr.yaml) checks for each of them.
+
+| Term | Article | Severity if missing |
+|---|---|---|
+| Description of the processing (subject matter, duration, nature, purpose, data types, data subjects) | 28(3) | Medium |
+| Processing only on documented instructions | 28(3)(a) | High |
+| Confidentiality for the people who handle the data | 28(3)(b) | Medium |
+| Security measures | 28(3)(c), 32 | Medium |
+| Prior approval of sub-processors, notice of changes | 28(2), 28(3)(d) | High |
+| Same obligations passed on to sub-processors | 28(4) | Medium |
+| Help with data subject requests | 28(3)(e) | Medium |
+| Breach notification to you | 28(3)(f), 33(2) | High |
+| Help with impact assessments and prior consultation | 28(3)(f) | Medium |
+| Deletion or return at the end | 28(3)(g) | High |
+| Information and audits | 28(3)(h) | Medium |
+| Warning about unlawful instructions | 28(3), last subparagraph | Low |
+
+**Where the DPA lives.** Most vendor contracts keep the DPA in an appendix. The tool recognises a contract that points to a separate DPA and covers fewer than six of the twelve terms itself, and asks for the DPA instead of reporting the gaps as real. The reverse also holds: a document that covers six or more terms is treated as a DPA in its own right, so contract-only checks such as liability, termination and governing law are not shown for it. Two contract checks stay on because they matter in a DPA too: training on your data and transfers outside the EU (marked `in_dpa` in `checks.yaml`).
+
+**Accuracy.** The answer key for all nine documents was written by hand before the rules. On the 8 development documents (the six contracts plus an English and a Danish DPA, each with planted gaps) the pack matched the key exactly: 65 of 65 decisions. The held-out DPA, written in the style of the Commission's standard clauses before the rules and run once, also matched on the first run, including a trap where breaches are mentioned without any duty to report them. The same author wrote the rules and the held-out DPA, so treat this as a check of known drafting styles. The next real test is anonymised DPAs from vendors.
+
+Building the pack also exposed a gap in the core training check: *"may use the personal data to train its models"* was not caught, because the rule only knew wording like *customer data* and *content*. Personal data (and *personoplysninger*) was added; no sample changed result.
+
 ## DORA pack
 
 For financial entities under DORA (Regulation (EU) 2022/2554), an optional pack in [`rules/dora.yaml`](../src/clausecheck/rules/dora.yaml) checks the key contractual provisions of Article 30. Every AI tool a bank, insurer or pension fund buys is an ICT service, so its contract must contain them.
@@ -70,7 +95,7 @@ The risky sample is also stored as Word and PDF. A test checks that all three fo
 | Check | Why it matters | Source |
 |---|---|---|
 | Vendor may train on your data | Confidentiality, purpose limitation, controller role | GDPR Art. 5(1)(b), 28 |
-| No data processing agreement | Written terms are required when a vendor processes personal data for you | GDPR Art. 28 |
+| No data processing agreement | Written terms are required when a vendor processes personal data for you. The GDPR pack checks those terms | GDPR Art. 28 |
 | Transfers without safeguards | Transfers outside the EU/EEA need a legal basis | GDPR Chapter V |
 | No AI Act terms | Deployers must follow the provider's instructions and ensure human oversight | EU AI Act Art. 13, 26 |
 | Vendor may end at any time | Exit and continuity risk; for financial entities also an ICT third-party question | DORA Art. 28 |
