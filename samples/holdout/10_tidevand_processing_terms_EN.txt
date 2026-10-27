@@ -1,0 +1,31 @@
+DATA PROCESSING TERMS
+TIDEVAND CLOUD OY AND THE CONTROLLER
+
+These clauses apply between Tidevand Cloud Oy (the "processor") and the customer (the "controller") whenever the processor processes personal data for the controller. Fictional held-out sample: written before the GDPR rules, never used to tune them, and run once to measure accuracy.
+
+CLAUSE 1. PURPOSE AND SCOPE
+1.1 These clauses ensure compliance with Article 28(3) and (4) of Regulation (EU) 2016/679.
+1.2 Annex I describes the processing: the categories of data subjects whose personal data is processed, the categories of personal data processed, the nature and purpose(s) of the processing and its duration.
+
+CLAUSE 2. INSTRUCTIONS
+2.1 The processor shall process personal data only on documented instructions from the controller, unless required to do so by Union or Member State law to which the processor is subject.
+2.2 The processor shall immediately inform the controller if, in the processor's opinion, instructions given by the controller infringe Regulation (EU) 2016/679 or other Union or Member State data protection provisions.
+
+CLAUSE 3. SECURITY OF PROCESSING
+3.1 The processor shall at least implement the technical and organisational measures specified in Annex II to ensure the security of the personal data.
+3.2 Personal data breaches are handled as set out in Annex II.
+
+CLAUSE 4. USE OF SUB-PROCESSORS
+4.1 The processor has the controller's general authorisation for the engagement of sub-processors from an agreed list. The processor shall specifically inform the controller in writing of any intended changes of that list at least fourteen (14) days in advance, giving the controller sufficient time to object.
+4.2 Where the processor engages a sub-processor, it shall do so by way of a contract which provides for, in substance, the same data protection obligations as those imposed on the processor under these clauses.
+
+CLAUSE 5. ASSISTANCE TO THE CONTROLLER
+5.1 The processor shall promptly notify the controller of any request it has received from a data subject, and shall assist the controller in fulfilling its obligations to respond to such requests.
+5.2 The processor shall assist the controller with the obligation to carry out an assessment of the impact of the envisaged processing operations on the protection of personal data (a "data protection impact assessment") and with any prior consultation of the supervisory authority.
+
+CLAUSE 6. DOCUMENTATION AND COMPLIANCE
+6.1 The processor shall make available to the controller all information necessary to demonstrate compliance with the obligations in these clauses.
+6.2 The controller may choose to conduct the audit by itself or mandate an independent auditor. Audits may also include inspections at the premises or physical facilities of the processor.
+
+CLAUSE 7. END OF PROCESSING
+7.1 Following termination of the contract, the processor shall, at the choice of the controller, delete all personal data processed on behalf of the controller and certify to the controller that it has done so, or return all the personal data to the controller and delete existing copies, unless Union or Member State law requires storage.

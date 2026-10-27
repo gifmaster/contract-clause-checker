@@ -1,0 +1,36 @@
+DATABEHANDLERAFTALE
+KLARSPROG AI APS
+
+Aftale mellem Klarsprog AI ApS ("Databehandleren") og kunden angivet i ordrebekræftelsen ("Den dataansvarlige"). Dette er en fiktiv eksempelaftale til demonstrationsbrug.
+
+1. Behandlingens genstand, varighed, karakter og formål
+Databehandleren behandler personoplysninger på vegne af Den dataansvarlige for at levere Tjenesten i hovedaftalen og i hele hovedaftalens løbetid. Formålet med behandlingen er at omskrive breve og vejledninger til klart sprog.
+
+2. Typer af personoplysninger og kategorier af registrerede
+Behandlingen omfatter almindelige personoplysninger som navn, adresse og sagsnummer. Kategorierne af registrerede er Den dataansvarliges borgere, kunder og medarbejdere.
+
+3. Instruks
+3.1 Databehandleren må kun behandle personoplysninger efter dokumenteret instruks fra Den dataansvarlige.
+3.2 Databehandleren underretter straks Den dataansvarlige, hvis en instruks efter Databehandlerens opfattelse er i strid med databeskyttelsesforordningen eller anden databeskyttelseslovgivning.
+
+4. Fortrolighed
+Databehandleren sikrer, at de personer, der er autoriseret til at behandle personoplysningerne, har forpligtet sig til fortrolighed eller er underlagt en passende lovbestemt tavshedspligt.
+
+5. Behandlingssikkerhed
+Databehandleren træffer alle foranstaltninger, der kræves efter databeskyttelsesforordningens artikel 32, herunder kryptering og adgangsstyring.
+
+6. Underdatabehandlere
+Databehandleren må kun gøre brug af underdatabehandlere med Den dataansvarliges forudgående specifikke skriftlige godkendelse.
+
+7. Bistand til Den dataansvarlige
+7.1 Databehandleren bistår Den dataansvarlige med at besvare anmodninger om udøvelse af de registreredes rettigheder.
+7.2 Databehandleren bistår Den dataansvarlige med at overholde forpligtelserne i artikel 32-36, herunder konsekvensanalyser og forudgående høring af Datatilsynet.
+
+8. Brud på persondatasikkerheden
+Databehandleren underretter Den dataansvarlige uden unødig forsinkelse efter at være blevet opmærksom på et brud på persondatasikkerheden.
+
+9. Sletning og tilbagelevering
+Ved ophør af hovedaftalen sletter eller tilbageleverer Databehandleren alle personoplysninger efter Den dataansvarliges valg og sletter eksisterende kopier, medmindre lovgivningen kræver opbevaring.
+
+10. Revision og tilsyn
+Databehandleren stiller alle oplysninger, der er nødvendige for at påvise overholdelsen af artikel 28, til rådighed for Den dataansvarlige og giver mulighed for revisioner, herunder inspektioner.
