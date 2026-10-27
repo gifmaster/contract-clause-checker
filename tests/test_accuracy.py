@@ -14,8 +14,11 @@ from clausecheck import Rules, analyse, read_file
 ROOT = Path(__file__).parents[1]
 TRUTH = yaml.safe_load((Path(__file__).parent / "ground_truth.yaml").read_text(encoding="utf-8"))["samples"]
 RULES = Rules.builtin()
-RESULTS = {name: analyse(read_file(ROOT / "samples" / name), RULES, dora="critical", gdpr=True) for name in TRUTH}
-CONTRACTS = [n for n, t in TRUTH.items() if t.get("kind") != "dpa"]  # stand-alone DPAs are scored on the GDPR pack only
+RESULTS = {name: analyse(read_file(ROOT / "samples" / name), RULES, dora="critical", gdpr=True, nis2=True) for name in TRUTH}
+# Samples written for one pack are scored on that pack only: DPAs on GDPR, NIS2 contracts on NIS2.
+CONTRACTS = [n for n, t in TRUTH.items() if not t.get("kind")]
+GDPR_SAMPLES = [n for n, t in TRUTH.items() if t.get("kind") in (None, "dpa")]
+NIS2_SAMPLES = [n for n, t in TRUTH.items() if "nis2" in t]
 
 
 def core(result):
@@ -28,6 +31,10 @@ def dora(result):
 
 def gdpr(result):
     return {f.id for f in result.findings if f.pack == "gdpr"}
+
+
+def nis2(result):
+    return {f.id for f in result.findings if f.pack == "nis2"}
 
 
 @pytest.mark.parametrize("name", CONTRACTS)
@@ -59,14 +66,21 @@ def test_values_extracted(name):
         assert values.get(key) == want, f"{name}: {key} expected {want!r}, got {values.get(key)!r}"
 
 
-@pytest.mark.parametrize("name", TRUTH)
+@pytest.mark.parametrize("name", NIS2_SAMPLES)
+def test_nis2_findings_exactly_as_labelled(name):
+    got = nis2(RESULTS[name])
+    want = set(TRUTH[name]["nis2"])
+    assert got == want, f"{name}: missing {want - got}, unexpected {got - want}"
+
+
+@pytest.mark.parametrize("name", GDPR_SAMPLES)
 def test_gdpr_findings_exactly_as_labelled(name):
     got = gdpr(RESULTS[name])
     want = set(TRUTH[name]["gdpr"])
     assert got == want, f"{name}: missing {want - got}, unexpected {got - want}"
 
 
-@pytest.mark.parametrize("name", TRUTH)
+@pytest.mark.parametrize("name", GDPR_SAMPLES)
 def test_separate_dpa_is_recognised(name):
     assert RESULTS[name].dpa_elsewhere == TRUTH[name]["dpa_elsewhere"], name
 
@@ -76,8 +90,9 @@ def test_overall_precision_and_recall():
     tp = fp = fn = 0
     for name, truth in TRUTH.items():
         result = RESULTS[name]
-        if truth.get("kind") == "dpa":
-            fw, gw = set(truth["gdpr"]), gdpr(result)
+        if truth.get("kind"):
+            pack = {"dpa": ("gdpr", gdpr), "nis2": ("nis2", nis2)}[truth["kind"]]
+            fw, gw = set(truth[pack[0]]), pack[1](result)
             tp, fn, fp = tp + len(fw & gw), fn + len(fw - gw), fp + len(gw - fw)
             continue
         want = {(c, h) for c, h in truth["clauses"].items()}
@@ -86,7 +101,8 @@ def test_overall_precision_and_recall():
         tp += len(want & got)
         fn += len(want - got)
         fp += len({g for g in got if g[0] not in truth["clauses"]})
-        fw, gw = set(truth["findings"]) | set(truth["dora"]) | set(truth["gdpr"]), {f.id for f in result.findings}
+        fw = set(truth["findings"]) | set(truth["dora"]) | set(truth["gdpr"]) | set(truth["nis2"])
+        gw = {f.id for f in result.findings}
         tp += len(fw & gw)
         fn += len(fw - gw)
         fp += len(gw - fw)
@@ -106,6 +122,6 @@ def test_every_finding_has_evidence_or_is_a_missing_clause():
 def test_same_result_from_pdf_and_word(fmt):
     """The same contract as PDF or Word must give the same findings and key terms as plain text."""
     base = RESULTS["01_brightloop_ai_terms_EN.txt"]
-    other = analyse(read_file(ROOT / "samples" / f"04_brightloop_ai_terms_EN.{fmt}"), RULES, dora="critical", gdpr=True)
+    other = analyse(read_file(ROOT / "samples" / f"04_brightloop_ai_terms_EN.{fmt}"), RULES, dora="critical", gdpr=True, nis2=True)
     assert {f.id for f in other.findings} == {f.id for f in base.findings}
     assert {k: v for k, v in other.values.items() if k != "liability_cap"} == {k: v for k, v in base.values.items() if k != "liability_cap"}

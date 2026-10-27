@@ -35,6 +35,27 @@ When a vendor processes personal data on your behalf, GDPR Art. 28 requires a co
 
 Building the pack also exposed a gap in the core training check: *"may use the personal data to train its models"* was not caught, because the rule only knew wording like *customer data* and *content*. Personal data (and *personoplysninger*) was added; no sample changed result.
 
+## NIS2 pack
+
+NIS2 (Directive (EU) 2022/2555) Art. 21(2)(d) requires essential and important entities to manage supply chain security, including the security aspects of their relationships with direct suppliers. In Denmark it is implemented by the NIS2 Act. The directive does not list contract terms; point 5.1.4 of the Annex to Commission Implementing Regulation (EU) 2024/2690 does, and the pack in [`rules/nis2.yaml`](../src/clausecheck/rules/nis2.yaml) checks one term per point.
+
+| Term | Point of 5.1.4 | Severity if missing |
+|---|---|---|
+| Cybersecurity requirements for the supplier | (a) | High |
+| Security skills and training of supplier staff | (b) | Low |
+| Background checks on supplier staff | (c) | Low |
+| Incident notification without undue delay | (d) | High |
+| Right to audit, or audit reports | (e) | Medium |
+| Handling of vulnerabilities | (f) | High |
+| Subcontracting conditions | (g) | Medium |
+| Return and disposal of information at the end | (h) | Medium |
+
+**How binding it is.** Implementing Regulation (EU) 2024/2690 is binding for digital infrastructure and ICT service providers: DNS, TLD registries, cloud, data centres, CDNs, managed (security) service providers, online marketplaces, search engines, social networks and trust service providers. For other NIS2 entities, such as a water or heating utility, it is the most concrete reading of Art. 21(2)(d) available, not a binding list. The regulation itself asks for these terms "where appropriate", based on the entity's own supply chain risk assessment. The report and the app say this next to the checklist.
+
+**Accuracy.** As for the GDPR pack, the answer key was written by hand before the rules. On 7 development contracts (the six existing ones plus a water utility contract with two planted gaps) the pack matched exactly: 38 of 38. The held-out Danish contract in `§` style, written before the rules and run once, also scored 1.00 on the first run, including a trap where the vendor may *update the platform at its own choice*, which is not vulnerability handling.
+
+**The lucky result.** A unit test written afterwards showed that one of those held-out results was luck. The rule did not understand the Danish compound *sikkerhedshændelse* (security incident) at all. It only matched because the section heading *Hændelser* happened to sit next to *uden unødig forsinkelse*. With a different heading the clause would have been missed. Fix, in general terms: Danish incident and vulnerability words are now matched by their last part (*-hændelse*, *-brud*, *-sårbarhed*), and a test checks the held-out clause without the heading.
+
 ## DORA pack
 
 For financial entities under DORA (Regulation (EU) 2022/2554), an optional pack in [`rules/dora.yaml`](../src/clausecheck/rules/dora.yaml) checks the key contractual provisions of Article 30. Every AI tool a bank, insurer or pension fund buys is an ICT service, so its contract must contain them.

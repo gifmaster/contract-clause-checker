@@ -13,6 +13,7 @@
 #
 # Check type: absent, fires when no sentence matches any `pattern`
 # (a sentence that also matches an `unless` pattern does not count).
+# Danish compounds are matched by their last part: sikkerhedshændelse, driftshændelse, sikkerhedssårbarhed.
 # The checks find wording that covers a term, not whether it is strict enough. Screening aid, not legal advice.
 
 negations: &negations ['\b(will|shall|does|is|are|may|can|need) not\b', "n't\\b", '\bno (obligation|duty|responsibility)', '\b(er|har|kan|skal|vil|må) ikke\b']
@@ -75,8 +76,8 @@ checks:
     pattern:
       - '\b(notif\w*|inform\w*|report\w*|tell\w*)\b[^.]{0,160}\b(incident|breach)'
       - '\b(incident|breach)\w*\b[^.]{0,120}\b(notif\w*|reported|without undue delay)'
-      - '\b(underret\w*|informer\w*|orienter\w*|varsl\w*)\b[^.]{0,160}\b(hændelse\w*|sikkerhedsbrud|brud)'
-      - '\b(hændelse\w*|sikkerhedsbrud)\b[^.]{0,120}\b(underret\w*|uden unødig forsinkelse)'
+      - '\b(underret\w*|informer\w*|orienter\w*|varsl\w*)\b[^.]{0,160}\b\w*(hændelse|brud)\w*'
+      - '\b\w*(hændelse|brud)\w*\b[^.]{0,120}\b(underret\w*|uden unødig forsinkelse)'
     unless: *negations
     looked_for: notice to you, without undue delay, of incidents that put your network and information systems at risk
     why: The supplier should tell you without undue delay about incidents that put your systems at risk, since your own NIS2 reporting clock starts at 24 hours.
@@ -107,7 +108,7 @@ checks:
       - '\bvulnerabilit\w*'
       - '\b(security )?patch\w*'
       - '\bsecurity (updates?|fix\w*)'
-      - '\bsårbarhed\w*'
+      - '\b\w*sårbarhed\w*'
       - '\bsikkerheds(opdatering|rettelse)\w*'
     unless: *negations
     looked_for: an obligation to handle vulnerabilities that put your systems at risk
