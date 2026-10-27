@@ -1,0 +1,143 @@
+# NIS2 pack: supply chain security terms in contracts with suppliers.
+#
+# NIS2 (Directive (EU) 2022/2555) Art. 21(2)(d) requires essential and important entities to manage
+# supply chain security, including the security aspects of their relationships with direct suppliers.
+# In Denmark it is implemented by the NIS2 Act (NIS2-loven) and the sector rules under it.
+#
+# The concrete contract terms come from point 5.1.4 of the Annex to Commission Implementing Regulation
+# (EU) 2024/2690. That regulation is binding for digital infrastructure and ICT service providers: DNS,
+# TLD registries, cloud, data centres, CDNs, managed (security) service providers, online marketplaces,
+# search engines, social networks and trust service providers. For other NIS2 entities it is the most
+# concrete reading of Art. 21(2)(d) available, not a binding list. The Annex asks for these terms
+# "where appropriate", based on the entity's own supply chain risk assessment.
+#
+# Check type: absent, fires when no sentence matches any `pattern`
+# (a sentence that also matches an `unless` pattern does not count).
+# The checks find wording that covers a term, not whether it is strict enough. Screening aid, not legal advice.
+
+negations: &negations ['\b(will|shall|does|is|are|may|can|need) not\b', "n't\\b", '\bno (obligation|duty|responsibility)', '\b(er|har|kan|skal|vil|må) ikke\b']
+
+checks:
+  - id: nis2_security_requirements
+    severity: high
+    title: No cybersecurity requirements for the supplier
+    type: absent
+    pattern:
+      - 'information security'
+      - '\bcyber ?security\b'
+      - '\bsecurity (requirements|measures|controls|standards?)\b'
+      - 'ISO/?IEC 27001'
+      - 'technical and organi[sz]ational (security )?measures'
+      - 'informationssikkerhed'
+      - 'cybersikkerhed'
+      - 'sikkerhedskrav'
+      - 'sikkerhedsforanstaltninger'
+    unless: *negations
+    looked_for: cybersecurity requirements the supplier must meet, such as a standard or a list of controls
+    why: The contract should set the cybersecurity requirements the supplier must meet, based on your own risk assessment.
+    ref: NIS2 Art. 21(2)(d); Impl. Reg. (EU) 2024/2690 Annex 5.1.4(a)
+
+  - id: nis2_staff_training
+    severity: low
+    title: Nothing on the security skills and training of the supplier's staff
+    type: absent
+    pattern:
+      - '\bsecurity (awareness|training|course)'
+      - '\b(staff|personnel|employees)\b[^.]{0,120}\b(train\w*|skills|qualifi\w*|certifi\w*|awareness)'
+      - '\b(train\w*|awareness)\b[^.]{0,80}\b(staff|personnel|employees)\b'
+      - '\b(medarbejdere|personale|ansatte)\b[^.]{0,120}\b(kursus|kurser|uddannelse|træning|certificer\w*|kompetence\w*)'
+      - '\b(kursus|kurser|uddannelse|træning)\b[^.]{0,40}\bi (informations|cyber)sikkerhed'
+    unless: *negations
+    looked_for: security awareness, skills and training for the supplier's staff
+    why: The contract should require that the supplier's staff have the right security skills and training, and certifications where appropriate.
+    ref: NIS2 Art. 21(2)(d); Impl. Reg. (EU) 2024/2690 Annex 5.1.4(b)
+
+  - id: nis2_background_checks
+    severity: low
+    title: No background checks on the supplier's staff
+    type: absent
+    pattern:
+      - '\bbackground (check|verification|screening)'
+      - '\b(vetting|security clearance)\b'
+      - '\bscreen\w*\b[^.]{0,40}\b(staff|personnel|employees)\b'
+      - '\bstraffeattest'
+      - '\bbaggrunds(tjek|kontrol|undersøgelse)'
+      - '\bsikkerhedsgodkend\w*'
+    unless: *negations
+    looked_for: background verification of supplier staff with access to your systems
+    why: The contract should require background checks on supplier staff who can reach your systems, where your risk assessment calls for it.
+    ref: NIS2 Art. 21(2)(d); Impl. Reg. (EU) 2024/2690 Annex 5.1.4(c)
+
+  - id: nis2_incident_notification
+    severity: high
+    title: No duty to tell you about incidents
+    type: absent
+    pattern:
+      - '\b(notif\w*|inform\w*|report\w*|tell\w*)\b[^.]{0,160}\b(incident|breach)'
+      - '\b(incident|breach)\w*\b[^.]{0,120}\b(notif\w*|reported|without undue delay)'
+      - '\b(underret\w*|informer\w*|orienter\w*|varsl\w*)\b[^.]{0,160}\b(hændelse\w*|sikkerhedsbrud|brud)'
+      - '\b(hændelse\w*|sikkerhedsbrud)\b[^.]{0,120}\b(underret\w*|uden unødig forsinkelse)'
+    unless: *negations
+    looked_for: notice to you, without undue delay, of incidents that put your network and information systems at risk
+    why: The supplier should tell you without undue delay about incidents that put your systems at risk, since your own NIS2 reporting clock starts at 24 hours.
+    ref: NIS2 Art. 21(2)(d), 23; Impl. Reg. (EU) 2024/2690 Annex 5.1.4(d)
+
+  - id: nis2_audit
+    severity: medium
+    title: No right to audit and no audit reports
+    type: absent
+    pattern:
+      - '\baudit\w*'
+      - '\binspect\w*'
+      - '\b(ISAE|SOC ?2|SOC ?1)\b'
+      - '\brevision\w*'
+      - '\brevisor\w*'
+      - '\binspektion\w*'
+      - '\berklæring\w*'
+    unless: *negations
+    looked_for: a right to audit the supplier, or to receive independent audit reports
+    why: You should be able to audit the supplier or at least receive independent audit reports, such as ISAE 3402 or SOC 2.
+    ref: NIS2 Art. 21(2)(d); Impl. Reg. (EU) 2024/2690 Annex 5.1.4(e)
+
+  - id: nis2_vulnerability_handling
+    severity: high
+    title: No duty to handle vulnerabilities
+    type: absent
+    pattern:
+      - '\bvulnerabilit\w*'
+      - '\b(security )?patch\w*'
+      - '\bsecurity (updates?|fix\w*)'
+      - '\bsårbarhed\w*'
+      - '\bsikkerheds(opdatering|rettelse)\w*'
+    unless: *negations
+    looked_for: an obligation to handle vulnerabilities that put your systems at risk
+    why: The supplier should find and fix vulnerabilities that put your systems at risk, and tell you about them. A right to "update the platform" is not the same thing.
+    ref: NIS2 Art. 21(2)(d), 21(2)(e); Impl. Reg. (EU) 2024/2690 Annex 5.1.4(f)
+
+  - id: nis2_subcontracting
+    severity: medium
+    title: No terms on subcontracting
+    type: absent
+    pattern:
+      - '\bsub-?contract\w*'
+      - '\bsub-?processor\w*'
+      - '\bunderleverandør\w*'
+      - '\bunderdatabehandler\w*'
+    unless: *negations
+    looked_for: conditions for subcontracting, and the same security requirements for subcontractors
+    why: The contract should say whether the supplier may subcontract and, if so, pass your security requirements on to its subcontractors.
+    ref: NIS2 Art. 21(2)(d); Impl. Reg. (EU) 2024/2690 Annex 5.1.4(g)
+
+  - id: nis2_exit
+    severity: medium
+    title: Nothing on your information when the contract ends
+    type: absent
+    pattern:
+      - '\b(return\w*|retriev\w*|export\w*|delet\w*|eras\w*|destroy\w*|dispos\w*)\b[^.]{0,100}\b(data|information|content)\b'
+      - '\b(data|information|content)\b[^.]{0,100}\b(returned|deleted|destroyed|erased)\b'
+      - '\b(tilbagelever\w*|udlever\w*|slet\w*|destru\w*)\b[^.]{0,100}\b(data|oplysninger|information|indhold)'
+      - '\bstille\w*\b[^.]{0,60}\b(data|indhold|oplysninger)\b[^.]{0,40}\btil rådighed'
+    unless: *negations
+    looked_for: return and secure disposal of your information when the contract ends
+    why: When the contract ends, the supplier should hand back your information and securely dispose of what it holds.
+    ref: NIS2 Art. 21(2)(d); Impl. Reg. (EU) 2024/2690 Annex 5.1.4(h)
