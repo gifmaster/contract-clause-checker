@@ -14,6 +14,7 @@ ROOT = Path(__file__).parent
 sys.path.insert(0, str(ROOT / "src"))
 
 from clausecheck import Rules, analyse, processes_personal_data, read_bytes, to_csv, to_markdown  # noqa: E402
+from clausecheck.pdf import markdown_to_pdf  # noqa: E402
 from clausecheck.report import VALUE_LABELS, format_value  # noqa: E402
 
 REPO_URL = "https://github.com/gifmaster/contract-clause-checker"
@@ -140,7 +141,10 @@ with right:
         "Found": ["✅" if result.found(c) else "No" for c in R.labels],
         "Where": ["; ".join(s.heading for s in result.clauses.get(c, [])) for c in R.labels],
     })
-    st.download_button("Download review (Markdown)", to_markdown(result, R, name),
+    review = to_markdown(result, R, name)
+    st.download_button("Download review (PDF)", markdown_to_pdf(review, "AI Contract Clause Checker"),
+                       file_name="contract-review.pdf", mime="application/pdf", type="primary", width="stretch")
+    st.download_button("Download review (Markdown)", review,
                        file_name="contract-review.md", mime="text/markdown", width="stretch")
     st.download_button("Download clause table (CSV)", to_csv(result, R),
                        file_name="contract-clauses.csv", mime="text/csv", width="stretch")

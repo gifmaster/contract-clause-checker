@@ -13,7 +13,7 @@ Upload a contract (PDF, Word or text, English or Danish). The tool splits it int
 - an AI service with **no terms supporting your EU AI Act duties**
 - **automatic renewal**, **one-sided changes**, a vendor that can **end the service at any time**, **non-EU governing law**
 
-Every finding shows the exact sentence it is based on and the rule that produced it.
+Every finding shows the exact sentence it is based on and the rule that produced it. Download the review as a PDF to share, or as Markdown to edit.
 
 **Data processing agreements:** the **GDPR pack** checks the 12 terms a data processing agreement must contain under GDPR Art. 28: processing only on your instructions, staff confidentiality, security, sub-processor approval and flow-down, help with data subject requests and impact assessments, breach notification, deletion or return, audits, and a warning about unlawful instructions. It switches on when a document mentions personal data. Run it on the DPA itself: when a contract points to a DPA in an appendix, the tool says so and asks for the DPA instead of reporting ten gaps.
 
@@ -110,7 +110,7 @@ pip install pytest
 pytest
 ```
 
-144 tests: segmentation, negation and consent handling, rule validation, the GDPR, NIS2 and DORA packs, accuracy against labelled contracts, identical results from PDF, Word and text, and app smoke tests.
+150 tests: segmentation, negation and consent handling, rule validation, the GDPR, NIS2 and DORA packs, accuracy against labelled contracts, identical results from PDF, Word and text, PDF reports that say exactly what the Markdown report says, and app smoke tests.
 
 ## Part of a toolkit
 
