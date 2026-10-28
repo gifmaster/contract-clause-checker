@@ -1,0 +1,27 @@
+MASTER SUBSCRIPTION AGREEMENT
+
+1. Definitions
+"Customer Data" means data, including personal data, submitted by Customer to the Services.
+
+2. Use of Data
+2.1 Provider will not sell Customer Data, but Provider may use Customer Data to improve and train its machine learning models.
+2.2 Unless Customer opts out in the admin console, Provider may use Inputs and Outputs to develop and improve the Services.
+2.3 Nothing in this Agreement restricts Provider from using Usage Data and Feedback to train its AI models.
+2.4 Customer Data will not be used to train foundation models, except as described in the AI Product Terms, which Provider may update from time to time.
+
+3. Data Protection
+3.1 The Data Processing Addendum available at provider.com/legal/dpa is incorporated by reference.
+3.2 Provider and its Subprocessors may process Customer Data in any country in which they maintain facilities.
+
+4. Term and Termination
+4.1 This Agreement renews automatically for successive twelve-month periods unless either party gives thirty days' notice.
+4.2 Provider may suspend, modify or discontinue any part of the Services at its sole discretion.
+
+5. Changes
+5.1 Provider may update these Terms by posting a revised version on its website. Continued use of the Services constitutes acceptance.
+
+6. Liability
+6.1 In no event shall Provider's aggregate liability exceed the fees paid in the one month preceding the claim.
+
+7. Governing Law
+7.1 This Agreement is governed by the laws of the State of California.

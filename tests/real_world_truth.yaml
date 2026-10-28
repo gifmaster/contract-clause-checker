@@ -1,0 +1,64 @@
+# Hand-labelled answer key for real, publicly published contracts (samples/real) and one synthetic hard case.
+# Written by reading each document BEFORE any rule was changed for it. Labels are one reader's judgement and can be argued with.
+#
+# kind:          main (a full agreement), dpa (a stand-alone data processing agreement) or addendum (scored on `scope` only)
+# clauses:       clause types that exist in the document and should be found
+# findings:      core check ids that should fire. Every other core check should stay silent (except `ignore`).
+# ignore:        checks not scored for this document (the answer depends on facts the document does not contain)
+# scope:         for addenda: the only checks scored
+# dpa_elsewhere: the document points to a data processing agreement kept elsewhere
+# is_dpa:        the tool should recognise the document as a data processing agreement in its own right
+# gdpr:          for DPAs: GDPR Art. 28 checks that should fire (the term is missing from the text)
+# synthetic:     written by the author, so not independent evidence
+
+docs:
+  real/commonpaper_cloud_service_agreement_v1.txt:
+    kind: main
+    clauses: [payment, term, termination, confidentiality, liability, indemnity, governing_law]
+    findings: [auto_renewal]          # "automatically renew for additional Subscription Periods"
+    dpa_elsewhere: true               # "must enter into a data processing agreement ... If the parties have a DPA"
+    notes: Liability cap exists ("will not be more than the General Cap Amount"). The only "United States" is an export-control clause. Governing law is a cover page variable.
+
+  real/bonterms_cloud_terms_v1.txt:
+    kind: main
+    clauses: [payment, term, termination, ip, liability, confidentiality, governing_law, data_protection]
+    findings: [auto_renewal]          # "will renew for successive periods unless ... notifies the other of non-renewal"
+    dpa_elsewhere: true               # 5.3 DPA identified on the Cover Page
+    notes: General cap exists (16.1). Usage Data excludes Customer Data. Trials and Betas can be ended by either party.
+
+  real/github_corporate_terms.txt:
+    kind: main
+    clauses: [termination, liability, confidentiality, governing_law, changes]
+    findings: [unilateral_changes, vendor_may_end_anytime]   # R: "reserves the right ... to amend ... at any time", "modify or discontinue ... with or without notice"
+    ignore: [non_eu_law]              # California for customers in the Americas, Ireland for everyone else
+    dpa_elsewhere: true               # "the GitHub Data Protection Agreement"
+    notes: Total liability is capped at 12 months of fees (N). No fixed-term automatic renewal.
+
+  real/commonpaper_ai_addendum_v1.txt:
+    kind: addendum
+    scope: [ai_training_on_data, no_ai_act_terms]
+    findings: [ai_training_on_data]   # 1.4: Provider may use Input and Output to develop and improve the AI System (training itself needs the cover page)
+    notes: Borderline. Training is off by default, but improvement use is allowed. A reviewer should see it.
+
+  real/commonpaper_dpa_v1.txt:
+    kind: dpa
+    is_dpa: true
+    gdpr: [gdpr_staff_confidentiality, gdpr_security, gdpr_unlawful_instruction]   # not in the body text; security measures sit on the cover page
+    findings: []
+    notes: Sub-processor flow-down is present (2.6.b and 2.6.c).
+
+  real/bonterms_dpa_v1.txt:
+    kind: dpa
+    is_dpa: true
+    gdpr: []
+    findings: []
+    notes: All twelve terms are present, processing details by default Schedule 1.
+
+  adversarial/13_cloudharbor_msa_US_EN.txt:
+    kind: main
+    synthetic: true
+    clauses: [ai_use, data_protection, changes, liability, governing_law]
+    findings: [ai_training_on_data, no_ai_act_terms, auto_renewal, unilateral_changes, vendor_may_end_anytime, non_eu_law,
+               transfer_without_safeguards, short_liability_cap, missing_confidentiality]
+    dpa_elsewhere: true               # DPA incorporated by reference
+    notes: "Written to contain: a negation followed by 'but' (2.1), a negation inside a qualifier (2.4), 'renews automatically' (4.1), a DPA incorporated by reference (3.1), transfers to 'any country' (3.2), a one-month liability cap (6.1)."
