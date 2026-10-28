@@ -17,6 +17,28 @@ RULES_DIR = Path(__file__).parent / "rules"
 FLAGS = re.IGNORECASE
 
 # --------------------------------------------------------------------------- #
+# Cleaning
+# --------------------------------------------------------------------------- #
+
+TAG_RE = re.compile(r"</?[A-Za-z][^<>\n]{0,200}>")
+MD_LINK_RE = re.compile(r"\[([^\]\n]+)\]\((?:[^)\n]*)\)")
+MD_BOLD_RE = re.compile(r"(\*\*|__)(?=\S)(.+?)(?<=\S)\1")
+MD_ITALIC_RE = re.compile(r"(?<![\w*_])([*_])(?=[^\s*_])([^*_\n]{1,80}?)(?<=[^\s*_])\1(?![\w*_])")
+
+
+def normalize(text: str) -> str:
+    """Remove web markup (HTML tags, Markdown links, bold and italics) from pasted or downloaded contracts.
+
+    Markdown headings ("## 5. Fees") are kept: the segmenter reads them as headings.
+    """
+    text = TAG_RE.sub(" ", text)
+    text = MD_LINK_RE.sub(r"\1", text)
+    text = MD_BOLD_RE.sub(r"\2", text)
+    text = MD_ITALIC_RE.sub(r"\2", text)
+    return text.replace("\u00a0", " ")
+
+
+# --------------------------------------------------------------------------- #
 # Data model
 # --------------------------------------------------------------------------- #
 
@@ -28,6 +50,7 @@ class Segment:
     text: str
     clause: str | None = None
     score: int = 0
+    also: list[str] = field(default_factory=list)  # a heading like "Term and Termination" covers two clause types
 
     @property
     def full(self) -> str:
@@ -86,6 +109,7 @@ class Result:
 
 SEVERITY_ORDER = {"high": 0, "medium": 1, "low": 2}
 DORA_LEVELS = {"all": ("all",), "critical": ("all", "critical")}  # which check levels run for each choice
+DPA_CLEARLY = 9  # ... and with this many it is a DPA whatever else it says about annexes
 DPA_ITSELF = 6  # a document covering at least this many Art. 28 terms is treated as a DPA in its own right
 
 # --------------------------------------------------------------------------- #
@@ -165,14 +189,48 @@ HEADING_RE = re.compile(
         (?:\d{1,2}(?:\.\d{1,2}){0,2}\.?)\s+[A-ZÆØÅ][^\n]{0,90}          # 1. Term / 4.2 Fees
       | (?:[Ss]ection|SECTION|[Cc]lause|CLAUSE|[Aa]rticle|ARTICLE|[Pp]unkt|PUNKT|§)\s*\d{1,2}\.?[^\n]{0,90}  # Section 5 ...
       | [A-ZÆØÅ][A-ZÆØÅ0-9 &,/.\-]{3,60}                               # ALL CAPS HEADING
+      | [A-Z]\.\s+[A-ZÆØÅ][A-Za-zÆØÅæøå ,&/'’\-]{2,60}                   # A. Definitions
     )\s*$""",
     re.VERBOSE,
 )
 NUMBER_ONLY_SUBCLAUSE = re.compile(r"^\s*\d{1,2}\.\d{1,2}\.?\s+")
 
 
+MD_HEADING_RE = re.compile(r"^#{1,6}\s+\S")
+SMALL_WORDS = {"of", "and", "the", "for", "to", "in", "on", "by", "or", "with", "at", "a", "an", "&", "vs", "og", "af", "for", "i", "og"}
+RUNIN_RE = re.compile(r"^\s*((?:\d{1,2}(?:\.\d{1,2}){0,2}|[A-Z])\.?)\s+(.{3,90}?)\.\s+(\S.*)$")
+
+
+def _split_runin(line: str) -> tuple[str, str] | None:
+    """Split "5.1 Use of Customer Data. Provider will ..." into heading and body.
+
+    Common in US-style contracts, where the heading runs into the first sentence. Only a short, Title Case phrase counts as a heading,
+    so an ordinary numbered sentence ("1. The Customer pays the fee. Payment is due ...") stays text.
+    """
+    m = RUNIN_RE.match(line)
+    if not m:
+        return None
+    num, title, rest = m.groups()
+    words = title.split()
+    if not 1 <= len(words) <= 8 or words[-1].lower() in SMALL_WORDS:
+        return None
+    for w in words:
+        if w.lower() in SMALL_WORDS or not w[0].isalpha() or w[0].isupper():
+            continue
+        return None
+    if len(num.rstrip(".")) == 1 and len(words) < 2 and not words[0].isupper():
+        return None  # "A. Smith. ..." is a name, not a heading
+    return f"{num} {title}", rest
+
+
+def _heading_text(line: str) -> str:
+    return re.sub(r"^#{1,6}\s+", "", line.strip())
+
+
 def _is_heading(line: str) -> bool:
     line = line.strip()
+    if MD_HEADING_RE.match(line):
+        return len(line) <= 120
     if not line or len(line) > 95:
         return False
     if not HEADING_RE.match(line):
@@ -181,6 +239,8 @@ def _is_heading(line: str) -> bool:
     # "6.2 The Supplier cooperates fully with the authority."
     if NUMBER_ONLY_SUBCLAUSE.match(line) and line.rstrip().endswith((".", ";")) and len(line.split()) > 4:
         return False
+    if re.match(r"^\s*\d{1,2}\.?\s", line) and line.rstrip().endswith((".", ";")) and len(line.split()) > 8:
+        return False  # "1. The Customer pays the fee in full within thirty days." is a sentence
     if NUMBER_ONLY_SUBCLAUSE.match(line) and line.rstrip().endswith(":") and len(line.split()) > 8:
         return False
     return True
@@ -191,15 +251,25 @@ def segment(text: str) -> list[Segment]:
     heading, buf = "", []
     for raw in text.splitlines():
         line = raw.rstrip()
-        if _is_heading(line):
+        runin = _split_runin(line)
+        is_head = not runin and _is_heading(line)
+        if is_head or runin:
             if heading or any(b.strip() for b in buf):
                 segments.append(Segment(len(segments), heading, "\n".join(buf).strip()))
-            heading, buf = line.strip(), []
+            heading, buf = (_heading_text(line), []) if is_head else (runin[0], [runin[1]])
         else:
             buf.append(line)
     if heading or any(b.strip() for b in buf):
         segments.append(Segment(len(segments), heading, "\n".join(buf).strip()))
     return [s for s in segments if s.full]
+
+
+NUM_PREFIX = re.compile(r"^\s*(\d{1,2}(?:\.\d{1,2})*)\.?(?=\s)")
+
+
+def _number(heading: str) -> str | None:
+    m = NUM_PREFIX.match(heading)
+    return m.group(1) if m else None
 
 
 NUMBERED = re.compile(r"^\s*(\d{1,2}(\.\d{1,2})*\.?\s|(section|clause|article|punkt|§)\s*\d)", FLAGS)
@@ -220,6 +290,20 @@ def classify(segments: list[Segment], rules: Rules) -> None:
                 best, best_score = c["id"], score
         if best_score >= rules.min_score:
             s.clause, s.score = best, best_score
+        if s.heading:
+            s.also = [c["id"] for c in rules.clauses
+                      if c["id"] != s.clause and 3 * sum(bool(p.search(s.heading)) for p in c["_heading"]) >= rules.min_score]
+    # A sub-clause such as "16.1 General Cap" belongs to its parent "16. Limitations of Liability" when it has no type of its own.
+    by_number: dict[str, Segment] = {}
+    for s in segments:
+        num = _number(s.heading)
+        if not num:
+            continue
+        by_number[num] = s
+        if s.clause is None and "." in num:
+            parent = by_number.get(num.rsplit(".", 1)[0])
+            if parent and parent.clause:
+                s.clause, s.score = parent.clause, parent.score
 
 
 # --------------------------------------------------------------------------- #
@@ -241,10 +325,20 @@ EU_NAMES = {"denmark": "Denmark", "danish": "Denmark", "dansk": "Denmark", "swed
             "netherlands": "Netherlands", "finland": "Finland", "france": "France", "belgium": "Belgium",
             "england and wales": "England and Wales", "engelsk": "England and Wales", "england": "England and Wales",
             "delaware": "USA (Delaware)", "california": "USA (California)", "new york": "USA (New York)",
-            "united states": "USA", "switzerland": "Switzerland", "schweizisk": "Switzerland"}
+            "united states": "USA", "united states of america": "USA", "usa": "USA", "u.s.": "USA", "switzerland": "Switzerland", "schweizisk": "Switzerland",
+            "india": "India", "singapore": "Singapore", "hong kong": "Hong Kong", "australia": "Australia", "canada": "Canada",
+            "japan": "Japan", "china": "China", "israel": "Israel", "scotland": "Scotland", "texas": "USA (Texas)",
+            "washington": "USA (Washington)", "massachusetts": "USA (Massachusetts)", "united kingdom": "England and Wales",
+            "united arab emirates": "United Arab Emirates", "new zealand": "New Zealand", "brazil": "Brazil"}
+KNOWN_LAWS = set(EU_NAMES.values())
 LAW_RE = re.compile(r"(?:laws?\s+of\s+(?:the\s+)?(?:[Ss]tate\s+of\s+)?([A-Z][A-Za-z ]{2,30}?)(?=[,.;)]|\s+(?:and|without|excluding|applicable))"
                     r"|\b(dansk|svensk|norsk|tysk|engelsk|schweizisk)\s+ret\b)", re.UNICODE)
-CAP_RE = re.compile(r"[^.]*(?:shall not exceed|will not exceed|not exceed|limited to|capped at|maximum (?:aggregate )?liability|overstige|begrænset til)[^.]*\.", FLAGS)
+CAP_RE = re.compile(r"[^.]*(?:shall not exceed|will not exceed|not exceed|not be (?:more|greater) than|\bexceed|limited to|capped at|(?:total|aggregate|cumulative|entire|maximum)[^.]{0,30}liability|overstige|begrænset til)[^.]*\.", FLAGS)
+AUTO_RENEWAL_RE = re.compile(
+    r"automatically\s+renew|auto-?renew|renews?\s+automatically|renewed\s+automatically|automatic\s+renewal"
+    r"|\b(?:will|shall|is deemed to)\s+renew\b[^.]{0,100}\bunless\b|renews?\s+for\s+(?:successive|additional|subsequent)"
+    r"|fornyes automatisk|forlænges automatisk|automatisk forlæng|automatisk forny", FLAGS)
+NOT_AUTO_RE = re.compile(r"not (be )?automatically renew|ikke automatisk", FLAGS)
 NOTICE_WORD = re.compile(r"notice|varsel", FLAGS)
 UPTIME_RE = re.compile(r"(\d{2}[.,]\d{1,3})\s?%")
 
@@ -290,8 +384,7 @@ def extract_values(text: str, clauses: dict[str, list[Segment]]) -> dict[str, An
     if init and _durations(init.group(0)):
         values["initial_term"] = _durations(init.group(0))[0]
 
-    values["auto_renewal"] = bool(re.search(r"automatically renew|auto-?renew|renew(?:ed)? automatically|fornyes automatisk|forlænges automatisk|automatisk forlæng", text, FLAGS)) \
-        and not re.search(r"not (be )?automatically renew|ikke automatisk", text, FLAGS)
+    values["auto_renewal"] = bool(AUTO_RENEWAL_RE.search(text)) and not NOT_AUTO_RE.search(text)
 
     up = UPTIME_RE.search(" ".join(s.full for s in clauses.get("service_levels", [])))
     if up:
@@ -330,6 +423,24 @@ def _short(s: str, n: int = 260) -> str:
     return s if len(s) <= n else s[: n - 1] + "…"
 
 
+CONTRAST_RE = re.compile(r"\s*;\s*|,\s*(?:but|and yet)\b|\b(?:however|although|whereas|except(?: that)?|men|dog|undtagen)\b", FLAGS)
+
+
+def _hit(sent: str, patterns: list, unless: list) -> bool:
+    """A pattern matches and no negation cancels it.
+
+    A negation only cancels its own part of the sentence: "Provider will not sell Customer Data, but may use it to train its models"
+    is still a hit, because the second part is not negated.
+    """
+    def plain(s: str) -> bool:
+        return any(p.search(s) for p in patterns) and not any(u.search(s) for u in unless)
+
+    if plain(sent):
+        return True
+    parts = [p for p in CONTRAST_RE.split(sent) if p and p.strip()]
+    return len(parts) > 1 and any(plain(p) for p in parts)
+
+
 def run_checks(result: Result, text: str, rules: Rules, dora: str | None = None, gdpr: bool = False,
                nis2: bool = False) -> list[Finding]:
     """Run the core checks, plus the DORA pack when ``dora`` is "all" or "critical", and the GDPR and NIS2 packs when asked."""
@@ -344,7 +455,7 @@ def run_checks(result: Result, text: str, rules: Rules, dora: str | None = None,
             fire = not result.found(k["clause"])
         elif t == "match":
             for sent in _scope_sentences(result, k.get("scope", "all")):
-                if any(p.search(sent) for p in k["_pattern"]) and not any(u.search(sent) for u in k.get("_unless", [])):
+                if _hit(sent, k["_pattern"], k.get("_unless", [])):
                     evidence.append(_short(sent))
             fire = bool(evidence)
         elif t == "present_without":
@@ -359,13 +470,10 @@ def run_checks(result: Result, text: str, rules: Rules, dora: str | None = None,
             if fire:
                 evidence = [_short(s) for s in trig[:2]]
         elif t == "absent":
-            fire = not any(
-                any(p.search(sent) for p in k["_pattern"]) and not any(u.search(sent) for u in k.get("_unless", []))
-                for sent in _scope_sentences(result, "all")
-            )
+            fire = not any(_hit(sent, k["_pattern"], k.get("_unless", [])) for sent in _scope_sentences(result, "all"))
         elif t == "value_not_in":
             v = result.values.get(k["value"])
-            fire = bool(v) and v not in k["allowed"]
+            fire = bool(v) and v not in k["allowed"] and (not k.get("known_only") or v in KNOWN_LAWS)
             if fire:
                 evidence = [f"Extracted {k['value'].replace('_', ' ')}: {v}"]
         else:
@@ -401,12 +509,13 @@ def analyse(text: str, rules: Rules | None = None, dora: str | None = None, gdpr
     nis2: True adds the NIS2 supply chain checks (Art. 21(2)(d), Impl. Reg. (EU) 2024/2690 Annex 5.1.4).
     """
     rules = rules or Rules.builtin()
+    text = normalize(text)
     segs = segment(text)
     classify(segs, rules)
     clauses: dict[str, list[Segment]] = {}
     for s in segs:
-        if s.clause:
-            clauses.setdefault(s.clause, []).append(s)
+        for cid in ([s.clause] if s.clause else []) + s.also:
+            clauses.setdefault(cid, []).append(s)
     lang = "da" if len(DA_WORDS.findall(text)) > len(EN_WORDS.findall(text)) else "en"
     result = Result(segs, clauses, extract_values(text, clauses), [], lang, dora, gdpr, nis2=nis2)
     result.findings = run_checks(result, text, rules, dora, gdpr, nis2)
@@ -414,7 +523,8 @@ def analyse(text: str, rules: Rules | None = None, dora: str | None = None, gdpr
         covered = sum(ok for _, ok in result.gdpr_checklist(rules))
         points_away = any(p.search(sent) for p in rules.dpa_elsewhere for sent in _scope_sentences(result, "all"))
         result.dpa_elsewhere = points_away and covered < DPA_ITSELF
-        result.is_dpa = covered >= DPA_ITSELF and not points_away
+        # A document that covers most of the twelve terms is a DPA, even when it mentions its own annexes.
+        result.is_dpa = covered >= DPA_ITSELF and (not points_away or covered >= DPA_CLEARLY)
         if result.is_dpa:
             # A DPA is not a full contract: liability, termination and the like belong in the main agreement.
             keep = {k["id"] for k in rules.checks if k.get("in_dpa")}

@@ -62,6 +62,13 @@ A check looks like this:
 | Held-out DPA in a different drafting style, **first run** | n/a | 1.00 / 1.00 |
 | NIS2 pack, 7 development contracts | n/a | 1.00 / 1.00 |
 | Held-out Danish NIS2 contract, **first run** | n/a | 1.00 / 1.00, one of them by luck (see below) |
+| **Public contracts the author did not write** (6 real, 1 synthetic), **first run** | 13 of 25 | **0.21 / 0.43** |
+| Same documents, after seven general fixes (tuned on these, so not independent) | 25 of 25 | 1.00 / 0.93 |
+| Two further public contracts, labelled first, **first run** | 11 of 11 | **0.83 / 0.83** |
+| Same two, after three more fixes (no longer independent) | 11 of 11 | 1.00 / 1.00 |
+
+The last four rows come from real, openly licensed contracts from Common Paper, Bonterms and GitHub. The tool did far worse on them than on its own samples,
+which is the point of testing on them. What went wrong, what was fixed and what is still wrong: [docs/REAL-WORLD-TEST.md](docs/REAL-WORLD-TEST.md).
 
 The NIS2 held-out contract also scored 1.00 on its first run, but a unit test then showed that one result was luck: the rule did not understand the Danish compound *sikkerhedshændelse*, and only matched because the heading *Hændelser* sat next to *uden unødig forsinkelse*. Danish compounds are now matched by their last part. The GDPR held-out DPA passed on its first run, including a planted trap (breaches "handled as set out in Annex II" with no duty to tell you). It was written by the same author as the rules, so it is a weaker test than a real contract. Each earlier held-out test found real weaknesses: a heading style the rules did not know, and short numbered sub-clauses that were read as headings and never checked. They were fixed in general terms and are now regression tests. Small fictional test set, so treat the numbers as a floor for known patterns, not a promise for every contract. Details in [docs/METHOD.md](docs/METHOD.md).
 

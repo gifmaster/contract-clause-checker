@@ -105,6 +105,10 @@ The risky sample is also stored as Word and PDF. A test checks that all three fo
 
 ## Known limitations
 
+- Tested on real public contracts as well as the author's own samples. The tool did much worse on the real ones at first; see [REAL-WORLD-TEST.md](REAL-WORLD-TEST.md).
+- A permission to use data to *improve* a service, in a sentence that also contains a negation, can be missed (documented known miss).
+- Terms in a cover page, order form or annex are not visible.
+
 - Headings are needed to split clauses. Contracts written as one long block of text will be classified poorly.
 - Tables, footnotes and appendices referenced by name (e.g. "the DPA in Appendix 3") are not read; the reference itself counts.
 - The checks look at the customer's side of an AI or SaaS vendor contract. They are not a general contract review.
