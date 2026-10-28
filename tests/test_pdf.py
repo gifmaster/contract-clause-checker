@@ -59,3 +59,10 @@ def test_review_pdf_matches_markdown(name):
     rules = Rules.builtin()
     md = to_markdown(analyse(read_file(ROOT / "samples" / name), rules, dora="critical", gdpr=True, nis2=True), rules, name)
     assert assert_same_content(md, markdown_to_pdf(md, "AI Contract Clause Checker")) >= 5
+
+
+def test_pdf_credits_the_author():
+    data = markdown_to_pdf("# T\n\n- a", "Tool")
+    raw = " ".join(pg.extract_text() or "" for pg in pypdf.PdfReader(io.BytesIO(data)).pages)
+    assert "Built by Alexander Senderovitz, senderovitz.eu" in raw
+    assert pypdf.PdfReader(io.BytesIO(data)).metadata.author == "Alexander Senderovitz"
