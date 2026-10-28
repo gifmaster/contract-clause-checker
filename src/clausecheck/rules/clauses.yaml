@@ -7,6 +7,9 @@
 # Patterns are case-insensitive and cover English and Danish.
 # A segment gets the clause type with the highest score, if that score reaches min_score.
 
+# Date the rules in all packs were last checked against their sources. Update when you review them.
+last_reviewed: "2026-10-28"
+
 min_score: 3
 
 clauses:

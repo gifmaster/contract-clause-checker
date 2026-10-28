@@ -96,7 +96,7 @@ with st.sidebar:
     st.caption("English and Danish contracts. Screening aid, not legal advice.")
 
 st.title("AI Contract Clause Checker")
-st.caption("Built by [Alexander Senderovitz](https://senderovitz.eu)")
+st.caption(f"Built by [Alexander Senderovitz](https://senderovitz.eu) · Rules last reviewed {R.last_reviewed}")
 st.caption("Finds the key clauses in AI and SaaS vendor contracts and flags the terms worth a second look.")
 with st.expander("What this tool does not catch"):
     st.markdown(
@@ -156,7 +156,7 @@ with right:
         "Where": ["; ".join(s.heading for s in result.clauses.get(c, [])) for c in R.labels],
     })
     review = to_markdown(result, R, name)
-    st.download_button("Download review (PDF)", markdown_to_pdf(review, "AI Contract Clause Checker"),
+    st.download_button("Download review (PDF)", markdown_to_pdf(review, "AI Contract Clause Checker", reviewed=R.last_reviewed),
                        file_name="contract-review.pdf", mime="application/pdf", type="primary", width="stretch")
     st.download_button("Download review (Markdown)", review,
                        file_name="contract-review.md", mime="text/markdown", width="stretch")
