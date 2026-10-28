@@ -96,6 +96,7 @@ with st.sidebar:
     st.caption("English and Danish contracts. Screening aid, not legal advice.")
 
 st.title("AI Contract Clause Checker")
+st.caption("Built by [Alexander Senderovitz](https://senderovitz.eu)")
 st.caption("Finds the key clauses in AI and SaaS vendor contracts and flags the terms worth a second look.")
 with st.expander("What this tool does not catch"):
     st.markdown(
