@@ -96,6 +96,19 @@ with st.sidebar:
 
 st.title("AI Contract Clause Checker")
 st.caption("Finds the key clauses in AI and SaaS vendor contracts and flags the terms worth a second look.")
+with st.expander("What this tool does not catch"):
+    st.markdown(
+        "- **Whether a clause is good enough.** It checks that wording exists, not that it is adequate. A cap of one month of fees and a cap of "
+        "twelve months both count as *a cap*, so the tool adds a separate flag for very small caps.\n"
+        "- **Anything outside the text you give it.** Cover pages, order forms, annexes and website policies are invisible. A term that sits there "
+        "will show as missing.\n"
+        "- **Unusual drafting.** It reads sentences with rules, not legal meaning. Long cross-references, double negatives and unusual wording can "
+        "slip through or be flagged wrongly.\n"
+        "- **Your situation.** It does not know your sector, your risk appetite or whether a term is enforceable.\n"
+        "- **How accurate it is.** Measured on public contracts the author did not write: see "
+        "[the real-world test](https://github.com/gifmaster/contract-clause-checker/blob/main/docs/REAL-WORLD-TEST.md), including what it got wrong.\n\n"
+        "A screening aid for the person reviewing the contract. Not legal advice."
+    )
 
 if not text.strip():
     st.info("Choose a sample contract or upload one to start.")

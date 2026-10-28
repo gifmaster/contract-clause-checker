@@ -24,6 +24,9 @@ checks:
       - 'categor(y|ies) of data subjects'
       - '(types?|categor(y|ies)) of personal data'
       - 'nature and purpose'
+      - '(subject[- ]matter|details) (and|of)[^.]{0,40}(details of )?(the )?processing'
+      - 'schedule \d+[^.]{0,40}(subject[- ]matter|details of processing)'
+      - 'subject[- ]matter, nature,? (and )?purpose'
       - 'kategori(er|erne)? af (de )?registrerede'
       - '(typer|kategorier) af personoplysninger'
       - 'formål(et)? med behandlingen'
@@ -95,6 +98,9 @@ checks:
     type: absent
     pattern:
       - '\bsame\b[^.]{0,40}\b(data protection )?obligations\b'
+      - '\bwritten agreement\b[^.]{0,80}\bsub-?processors?\b[^.]{0,160}\b(obligations|terms|requirements)\b'
+      - '\bsub-?processors?\b[^.]{0,200}\b(imposing|imposed|incorporate|flow(ed)? down|bound by)\b[^.]{0,120}\b(obligations|terms|requirements)\b'
+      - '\b(obligations|terms)\b[^.]{0,80}\b(are|is|will be)\s+(also\s+)?imposed\s+on\b[^.]{0,30}\bsub-?processors?\b'
       - '\bsamme\b[^.]{0,40}\b(databeskyttelses)?forpligtelser'
     unless: *negations
     looked_for: the same data protection obligations passed on to every sub-processor
@@ -192,9 +198,15 @@ checks:
 # A document that points to a DPA kept elsewhere ("the data processing agreement in Appendix 3").
 # Then the Art. 28 terms are expected in that other document, and the app asks for it.
 dpa_elsewhere:
-  - '\b(data processing (agreement|addendum)|\bDPA\b)[^.]{0,80}\b(appendix|annex|schedule|exhibit|attached|forms part|separate|entered into)'
+  - '(?<!this )\b(data (processing|protection) (agreement|addendum)|\bDPA\b)[^.]{0,80}\b(appendix|annex|schedule|exhibit|attached|forms part|separate|entered into)'
   - '\b(appendix|annex|schedule|exhibit)\b[^.]{0,40}\b(data processing (agreement|addendum)|\bDPA\b)'
   - '\bentered into (a|the) data processing (agreement|addendum)'
   - '\bdatabehandleraftale\w*\b[^.]{0,80}\b(bilag|vedhæftet|separat)'
   - '\bbilag\b[^.]{0,40}\bdatabehandleraftale'
   - '\bindgået (en|den) databehandleraftale'
+  - '(?<!this )\bdata (processing|protection) (agreement|addendum|terms)\b[^.]{0,60}\b(incorporated|available (at|on)|located at|posted (at|on)|identified on|specified (on|in)|cover page|governs?|applies|apply)'
+  - '\b(adhere|comply|subject|bound) to the\b[^.]{0,40}\b(data (processing|protection) (agreement|addendum)|DPA)\b'
+  - '\b(must|shall|will|agree to) enter into (a|the) data (processing|protection) (agreement|addendum)'
+  - '\bthe\b[^.]{0,25}\bdata (processing|protection) (agreement|addendum)\b(?! (means|is defined))'
+  - '\bif the parties have a\b[^.]{0,20}\b(DPA|data (processing|protection) (agreement|addendum))'
+  - '\b(obligations|terms|requirements) (in|under|of) the (DPA|data (processing|protection) (agreement|addendum))'

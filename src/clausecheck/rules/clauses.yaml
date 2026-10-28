@@ -32,7 +32,7 @@ clauses:
 
   - id: data_protection
     label: Data protection
-    heading: ['data protection', 'personal data', 'privacy', 'gdpr', 'databeskyttelse', 'persondata', 'personoplysninger', 'databehandl', '^[\d.\s]*data\s*$']
+    heading: ['data protection', 'personal data', 'privacy', 'gdpr', 'databeskyttelse', 'persondata', 'personoplysninger', 'databehandl', '^[\d.\s]*data[\s.]*$']
     body: ['personal data', 'gdpr', 'data processing agreement', 'processor', 'sub-?processor', 'article 28', 'personoplysninger', 'databehandler', 'underdatabehandler']
 
   - id: ai_use

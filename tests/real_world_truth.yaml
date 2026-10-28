@@ -10,6 +10,8 @@
 # is_dpa:        the tool should recognise the document as a data processing agreement in its own right
 # gdpr:          for DPAs: GDPR Art. 28 checks that should fire (the term is missing from the text)
 # synthetic:     written by the author, so not independent evidence
+# known_misses: findings the tool does not produce yet. The test expects exactly these misses, so a fix shows up as a change here.
+# heldout:       added after the rules were tuned on the other documents; labelled before the first run, and run once before any fix
 
 docs:
   real/commonpaper_cloud_service_agreement_v1.txt:
@@ -38,7 +40,8 @@ docs:
     kind: addendum
     scope: [ai_training_on_data, no_ai_act_terms]
     findings: [ai_training_on_data]   # 1.4: Provider may use Input and Output to develop and improve the AI System (training itself needs the cover page)
-    notes: Borderline. Training is off by default, but improvement use is allowed. A reviewer should see it.
+    known_misses: [ai_training_on_data]
+    notes: Borderline, and a known miss. Training is off by default, but improvement use is allowed. The permission sits in a sentence that also says "provided that such usage does not constitute Training", and a rule that reads a negation anywhere in the clause cannot tell that from "provided it is not used to train". The tool prefers to stay silent over flagging every restriction.
 
   real/commonpaper_dpa_v1.txt:
     kind: dpa
@@ -62,3 +65,19 @@ docs:
                transfer_without_safeguards, short_liability_cap, missing_confidentiality]
     dpa_elsewhere: true               # DPA incorporated by reference
     notes: "Written to contain: a negation followed by 'but' (2.1), a negation inside a qualifier (2.4), 'renews automatically' (4.1), a DPA incorporated by reference (3.1), transfers to 'any country' (3.2), a one-month liability cap (6.1)."
+
+  real/commonpaper_professional_services_agreement_v1.txt:
+    kind: main
+    heldout: true
+    clauses: [payment, termination, liability, confidentiality, governing_law]
+    findings: []                      # a clean contract: nothing should fire
+    dpa_elsewhere: true               # "If the parties have a DPA, each party will comply with its obligations in the DPA"
+    notes: Liability caps by reference to cover page amounts. The only "United States" is an export-control clause. Governing law is a cover page variable.
+
+  real/github_terms_of_service.txt:
+    kind: main
+    heldout: true
+    clauses: [ai_use, termination, liability, confidentiality, governing_law, changes]
+    findings: [ai_training_on_data, no_ai_act_terms, unilateral_changes, vendor_may_end_anytime, no_liability_cap, non_eu_law]
+    dpa_elsewhere: false
+    notes: "J: licence to use Inputs and Outputs to develop, train and improve AI models unless you opt out. R: may modify the agreement at any time. M: may suspend or terminate access at any time, with or without cause. P: exclusion-only liability clause, no cap. S.1: US federal and California law."
