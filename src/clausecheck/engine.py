@@ -121,6 +121,7 @@ class Rules:
     def __init__(self, clauses: dict, checks: dict, dora: dict | None = None, gdpr: dict | None = None,
                  nis2: dict | None = None):
         self.min_score = clauses.get("min_score", 3)
+        self.last_reviewed: str = str(clauses.get("last_reviewed", ""))
         self.clauses = clauses["clauses"]
         self.labels = {c["id"]: c["label"] for c in self.clauses}
         self.checks = checks["checks"]
