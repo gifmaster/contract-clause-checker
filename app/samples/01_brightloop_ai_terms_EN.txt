@@ -1,0 +1,31 @@
+BRIGHTLOOP AI INC.
+MASTER SUBSCRIPTION AGREEMENT
+
+This Master Subscription Agreement ("Agreement") is entered into between BrightLoop AI Inc., a Delaware corporation ("BrightLoop"), and the customer identified in the Order Form ("Customer"). This is a fictional sample contract for demonstration purposes.
+
+1. Definitions
+"Services" means the BrightLoop AI assistant platform, including its large language model features. "Customer Data" means all data, content, prompts and files submitted by Customer or its users to the Services.
+
+2. Services
+BrightLoop will make the Services available to Customer during the Subscription Term. The Services use artificial intelligence and machine learning to generate text, summaries and recommendations. Outputs may be inaccurate and Customer is responsible for reviewing all outputs before use.
+
+3. Use of Customer Data
+Customer grants BrightLoop a worldwide, royalty-free licence to use Customer Data to provide the Services. BrightLoop may use Customer Data, including prompts and outputs, to train, improve and develop its models and services. Customer Data may include personal data of Customer's employees and customers, and BrightLoop will process such personal data in accordance with its privacy policy. Customer Data may be stored and processed in the United States.
+
+4. Fees and Payment
+Customer shall pay the fees set out in the Order Form annually in advance. Invoices are due within fifteen (15) days. BrightLoop may change its fees and these terms at any time by posting an updated version on its website.
+
+5. Term and Renewal
+The initial term is twelve (12) months from the effective date. The Agreement will automatically renew for successive twelve (12) month periods unless either party gives written notice of non-renewal at least ninety (90) days before the end of the then-current term.
+
+6. Termination
+BrightLoop may terminate this Agreement or suspend the Services at any time with thirty (30) days' notice. Customer may terminate for material breach if BrightLoop fails to cure such breach within thirty (30) days of written notice.
+
+7. Intellectual Property
+BrightLoop retains all right, title and interest in the Services, the models and any improvements. Customer owns its Customer Data, subject to the licence granted in Section 3.
+
+8. Disclaimer and Liability
+THE SERVICES ARE PROVIDED "AS IS". IN NO EVENT WILL BRIGHTLOOP BE LIABLE FOR ANY INDIRECT, INCIDENTAL, SPECIAL OR CONSEQUENTIAL DAMAGES, OR FOR ANY LOSS OF DATA, PROFITS OR REVENUE. Customer shall indemnify and hold harmless BrightLoop against any claims arising from Customer's use of the Services.
+
+9. Governing Law
+This Agreement is governed by the laws of the State of Delaware, without regard to its conflict of law rules. The courts of Delaware have exclusive jurisdiction.

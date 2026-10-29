@@ -1,0 +1,212 @@
+# GDPR pack: the terms a data processing agreement must contain.
+#
+# Regulation (EU) 2016/679 (GDPR), Article 28(3), with the sub-processor conditions of Art. 28(2) and (4).
+# Applies whenever a vendor processes personal data on your behalf, which is the case for most AI and SaaS tools.
+#
+# Run the pack on the data processing agreement itself. Many contracts keep the DPA in an appendix
+# ("the DPA in Appendix 3"); the tool notices that and asks for the DPA, since the main contract
+# will not contain these terms.
+#
+# Check type: absent, fires when no sentence matches any `pattern`
+# (a sentence that also matches an `unless` pattern does not count, e.g. "will not delete").
+#
+# The checks find wording that covers each term. They do not judge whether the wording is good enough:
+# a 48-hour and a 7-day breach notice both count. Screening aid, not legal advice.
+
+negations: &negations ['\b(will|shall|does|is|are|may|can|need) not\b', "n't\\b", '\bno (obligation|duty|responsibility)', '\b(er|har|kan|skal|vil|må) ikke\b']
+
+checks:
+  - id: gdpr_processing_details
+    severity: medium
+    title: The processing is not described
+    type: absent
+    pattern:
+      - 'categor(y|ies) of data subjects'
+      - '(types?|categor(y|ies)) of personal data'
+      - 'nature and purpose'
+      - '(subject[- ]matter|details) (and|of)[^.]{0,40}(details of )?(the )?processing'
+      - 'schedule \d+[^.]{0,40}(subject[- ]matter|details of processing)'
+      - 'subject[- ]matter, nature,? (and )?purpose'
+      - 'kategori(er|erne)? af (de )?registrerede'
+      - '(typer|kategorier) af personoplysninger'
+      - 'formål(et)? med behandlingen'
+    looked_for: subject matter, duration, nature and purpose of the processing, types of personal data and categories of data subjects
+    why: The agreement must set out what is processed and why, for how long, which types of personal data and whose data.
+    ref: GDPR Art. 28(3)
+
+  - id: gdpr_instructions
+    severity: high
+    title: No duty to process only on your instructions
+    type: absent
+    pattern:
+      - '\b(documented|written)\s+instructions?'
+      - '\bonly\b[^.]{0,80}\binstructions?\b'
+      - '\binstructions?\b[^.]{0,40}\b(of|from)\s+the\s+(controller|customer)'
+      - '\b(dokumenteret|skriftlig)\s+instruks'
+      - '\bkun\b[^.]{0,80}\binstruks'
+    unless: *negations
+    looked_for: processing only on your documented instructions, including on transfers outside the EU
+    why: The vendor may only process personal data on your documented instructions, including for transfers to third countries.
+    ref: GDPR Art. 28(3)(a)
+
+  - id: gdpr_staff_confidentiality
+    severity: medium
+    title: No confidentiality duty for the people who handle the data
+    type: absent
+    pattern:
+      - '\b(employees|staff|personnel|persons|individuals)\b[^.]{0,120}\b(confidential|confidentiality|secrecy)'
+      - '\b(medarbejdere|personer|ansatte|personale)\b[^.]{0,120}\b(fortrolighed|tavshedspligt)'
+    unless: *negations
+    looked_for: confidentiality commitments from the persons authorised to process the data
+    why: Everyone at the vendor who is authorised to process the data must be bound by confidentiality.
+    ref: GDPR Art. 28(3)(b)
+
+  - id: gdpr_security
+    severity: medium
+    title: No security measures for the personal data
+    type: absent
+    pattern:
+      - '\barticle\s*32\b'
+      - '\bart\.\s*32\b'
+      - '\bartikel\s*32\b'
+      - 'technical and organi[sz]ational (security )?measures'
+      - '\bsecurity measures\b'
+      - 'tekniske og organisatoriske'
+      - 'sikkerhedsforanstaltninger'
+    unless: *negations
+    looked_for: the security measures required by Art. 32
+    why: The vendor must take the security measures that Art. 32 requires, such as encryption, access control and testing.
+    ref: GDPR Art. 28(3)(c), 32
+
+  - id: gdpr_subprocessor_approval
+    severity: high
+    title: The vendor can bring in sub-processors without your approval
+    type: absent
+    pattern:
+      - '\b(sub-?processors?|sub-?contract\w*)\b[^.]{0,160}\b(authori[sz]\w*|approv\w*|consent|notif\w*|inform\w*|object\w*)'
+      - '\b(authori[sz]\w*|approv\w*|consent)\b[^.]{0,120}\b(sub-?processors?|sub-?contract\w*)'
+      - '\b(underdatabehandler\w*|underleverandør\w*)\b[^.]{0,160}\b(godkend\w*|samtykke|underret\w*|indsigelse)'
+      - '\b(godkend\w*|samtykke)\b[^.]{0,120}\b(underdatabehandler\w*|underleverandør\w*)'
+    unless: *negations
+    looked_for: your prior authorisation of sub-processors, and notice of changes with a right to object
+    why: The vendor may only use other processors with your prior specific or general written authorisation, and must tell you about changes so you can object.
+    ref: GDPR Art. 28(2), 28(3)(d)
+
+  - id: gdpr_subprocessor_flowdown
+    severity: medium
+    title: Sub-processors are not bound by the same obligations
+    type: absent
+    pattern:
+      - '\bsame\b[^.]{0,40}\b(data protection )?obligations\b'
+      - '\bwritten agreement\b[^.]{0,80}\bsub-?processors?\b[^.]{0,160}\b(obligations|terms|requirements)\b'
+      - '\bsub-?processors?\b[^.]{0,200}\b(imposing|imposed|incorporate|flow(ed)? down|bound by)\b[^.]{0,120}\b(obligations|terms|requirements)\b'
+      - '\b(obligations|terms)\b[^.]{0,80}\b(are|is|will be)\s+(also\s+)?imposed\s+on\b[^.]{0,30}\bsub-?processors?\b'
+      - '\bsamme\b[^.]{0,40}\b(databeskyttelses)?forpligtelser'
+    unless: *negations
+    looked_for: the same data protection obligations passed on to every sub-processor
+    why: Every sub-processor must be bound by the same data protection obligations as the vendor, and the vendor stays liable for them.
+    ref: GDPR Art. 28(4)
+
+  - id: gdpr_data_subject_rights
+    severity: medium
+    title: No help with requests from data subjects
+    type: absent
+    pattern:
+      - '\bdata subjects?\b[^.]{0,80}\b(rights|requests?)\b'
+      - '\b(rights|requests?)\b[^.]{0,60}\bdata subjects?\b'
+      - '\bregistrerede\w*\b[^.]{0,80}\b(rettigheder|anmodning\w*)'
+      - '\b(rettigheder|anmodning\w*)\b[^.]{0,60}\bregistrerede'
+    unless: *negations
+    looked_for: assistance when people use their rights (access, deletion, objection)
+    why: The vendor must help you answer requests from people who use their rights, such as access or deletion.
+    ref: GDPR Art. 28(3)(e)
+
+  - id: gdpr_breach_notification
+    severity: high
+    title: No duty to tell you about a personal data breach
+    type: absent
+    pattern:
+      - '\b(notif\w*|inform\w*|tell\w*|report\w*)\b[^.]{0,140}\b(personal data breach|data breach|security (incident|breach))'
+      - '\b(personal data breach|data breach|security (incident|breach))\w*\b[^.]{0,140}\b(notif\w*|inform\w*|report\w*|without undue delay)'
+      - '\b(underret\w*|informer\w*|orienter\w*|anmeld\w*)\b[^.]{0,140}\b(brud på (person)?datasikkerheden|brud på persondatasikkerheden|sikkerhedsbrud|sikkerhedshændelse\w*)'
+      - '\b(brud på (person)?datasikkerheden|brud på persondatasikkerheden|sikkerhedsbrud|sikkerhedshændelse\w*)\b[^.]{0,140}\b(underret\w*|uden unødig forsinkelse)'
+    unless: *negations
+    looked_for: notice to you without undue delay after the vendor becomes aware of a personal data breach
+    why: The vendor must tell you about a personal data breach without undue delay, so you can meet your own 72-hour deadline.
+    ref: GDPR Art. 28(3)(f), 33(2)
+
+  - id: gdpr_controller_assistance
+    severity: medium
+    title: No help with impact assessments and prior consultation
+    type: absent
+    pattern:
+      - 'impact assessment'
+      - '\bDPIA\b'
+      - 'prior consultation'
+      - '\barticles?\s*32\s*(to|-|–)\s*36\b'
+      - '\bkonsekvensanalyse'
+      - 'forudgående høring'
+      - '\bartikel\s*32\s*(til|-|–)\s*36\b'
+    unless: *negations
+    looked_for: assistance with security, breach duties, impact assessments and prior consultation (Art. 32 to 36)
+    why: The vendor must help you meet your duties under Art. 32 to 36, including data protection impact assessments.
+    ref: GDPR Art. 28(3)(f)
+
+  - id: gdpr_deletion_return
+    severity: high
+    title: Nothing on deleting or returning the data at the end
+    type: absent
+    pattern:
+      - '\b(delet\w*|eras\w*|destroy\w*|return\w*)\b[^.]{0,100}\b(personal data|customer data|data)\b'
+      - '\b(personal data|customer data|data)\b[^.]{0,100}\b(delet\w*|eras\w*|destroy\w*|returned)\b'
+      - '\b(slet\w*|tilbagelever\w*|destru\w*)\b[^.]{0,100}\b(personoplysninger|data|oplysninger)'
+      - '\b(personoplysninger|data|oplysninger)\b[^.]{0,100}\b(slettes|tilbageleveres)'
+    unless: *negations
+    looked_for: deletion or return of all personal data at the end, at your choice, and deletion of copies
+    why: When the service ends, the vendor must delete or return all personal data at your choice, and delete its copies.
+    ref: GDPR Art. 28(3)(g)
+
+  - id: gdpr_audit
+    severity: medium
+    title: No right to audit or get the information that shows compliance
+    type: absent
+    pattern:
+      - '\baudit\w*'
+      - '\binspect\w*'
+      - 'information necessary to demonstrate'
+      - '\brevision\w*'
+      - '\binspektion\w*'
+      - 'nødvendige for at påvise'
+    unless: *negations
+    looked_for: information that shows compliance, and your right to audits and inspections
+    why: The vendor must give you the information needed to show it complies, and allow audits and inspections by you or your auditor.
+    ref: GDPR Art. 28(3)(h)
+
+  - id: gdpr_unlawful_instruction
+    severity: low
+    title: No duty to warn you about an unlawful instruction
+    type: absent
+    pattern:
+      - '\binstructions?\b[^.]{0,120}\binfring\w*'
+      - '\binfring\w*\b[^.]{0,120}\binstructions?\b'
+      - '\binstruks\w*\b[^.]{0,120}\bi strid med'
+      - '\bi strid med\b[^.]{0,120}\binstruks'
+    looked_for: an immediate warning if one of your instructions breaks data protection law
+    why: The vendor must tell you immediately if it thinks one of your instructions breaks data protection law.
+    ref: GDPR Art. 28(3), last subparagraph
+
+# A document that points to a DPA kept elsewhere ("the data processing agreement in Appendix 3").
+# Then the Art. 28 terms are expected in that other document, and the app asks for it.
+dpa_elsewhere:
+  - '(?<!this )\b(data (processing|protection) (agreement|addendum)|\bDPA\b)[^.]{0,80}\b(appendix|annex|schedule|exhibit|attached|forms part|separate|entered into)'
+  - '\b(appendix|annex|schedule|exhibit)\b[^.]{0,40}\b(data processing (agreement|addendum)|\bDPA\b)'
+  - '\bentered into (a|the) data processing (agreement|addendum)'
+  - '\bdatabehandleraftale\w*\b[^.]{0,80}\b(bilag|vedhæftet|separat)'
+  - '\bbilag\b[^.]{0,40}\bdatabehandleraftale'
+  - '\bindgået (en|den) databehandleraftale'
+  - '(?<!this )\bdata (processing|protection) (agreement|addendum|terms)\b[^.]{0,60}\b(incorporated|available (at|on)|located at|posted (at|on)|identified on|specified (on|in)|cover page|governs?|applies|apply)'
+  - '\b(adhere|comply|subject|bound) to the\b[^.]{0,40}\b(data (processing|protection) (agreement|addendum)|DPA)\b'
+  - '\b(must|shall|will|agree to) enter into (a|the) data (processing|protection) (agreement|addendum)'
+  - '\bthe\b[^.]{0,25}\bdata (processing|protection) (agreement|addendum)\b(?! (means|is defined))'
+  - '\bif the parties have a\b[^.]{0,20}\b(DPA|data (processing|protection) (agreement|addendum))'
+  - '\b(obligations|terms|requirements) (in|under|of) the (DPA|data (processing|protection) (agreement|addendum))'

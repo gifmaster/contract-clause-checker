@@ -1,0 +1,53 @@
+HAVBRO CLAIMS AI A/S
+ICT SERVICES AGREEMENT FOR AI-ASSISTED CLAIMS TRIAGE
+
+Between Havbro Claims AI A/S, Aarhus ("Supplier") and the insurance undertaking named in the order ("Customer"). This is a fictional sample contract for demonstration purposes. The Customer is a financial entity under Regulation (EU) 2022/2554 (DORA), and the Service supports a critical or important function.
+
+1. Services
+The Supplier provides a cloud service that uses machine learning to sort incoming insurance claims by urgency and to suggest the next handling step ("Service"). A full description of all functions is set out in Appendix 1. Claims handlers make every decision on a claim.
+The Supplier may only subcontract parts of the Service with the Customer's prior written approval. Approved subcontractors and the conditions that apply to them are listed in Appendix 4.
+
+2. Term
+The Agreement starts on the effective date and runs for an initial term of thirty-six (36) months. After the initial term, either party may terminate the Agreement with six (6) months' written notice.
+
+3. Termination
+Either party may terminate the Agreement with immediate effect if the other party commits a material breach that is not remedied within thirty (30) days of written notice.
+The Customer may also terminate the Agreement with immediate effect if the Supplier breaches applicable law, if the Customer identifies weaknesses in the Supplier's ICT risk management, or if the Customer's competent authority can no longer effectively supervise the Customer as a result of this Agreement.
+
+4. Exit
+The Supplier maintains an exit plan for the Service. When the Agreement ends for any reason, a transition period of up to twelve (12) months applies, during which the Supplier continues to provide the Service and assists the Customer in migrating to another provider or to an in-house solution.
+On termination, and also if the Supplier becomes insolvent or discontinues its business operations, the Customer has access to its data, and the Supplier will return all Customer Data in CSV and JSON formats within thirty (30) days.
+
+5. Fees
+The fees are set out in the order and are invoiced quarterly in advance. Payment terms are thirty (30) days net.
+
+6. Service Levels
+The Supplier guarantees an availability of 99.9% per calendar month. The response time for critical errors is one (1) hour and the recovery time objective is four (4) hours. Service levels are reviewed every year, and changes are agreed in writing. Service credits apply as set out in Appendix 2.
+
+7. Security and Continuity
+The Supplier maintains an information security management system certified to ISO/IEC 27001 and implements security measures that protect the availability, authenticity, integrity and confidentiality of Customer Data.
+The Supplier maintains a business continuity plan and a disaster recovery plan for the Service and tests them at least once a year. The Customer receives a summary of the test results.
+
+8. Incidents and Notifications
+The Supplier will notify the Customer without undue delay, and no later than two (2) hours after detection, of any ICT incident affecting the Service. The Supplier will assist the Customer with the handling and reporting of any such incident at no additional cost.
+The Supplier will inform the Customer without undue delay of any material development that might affect its ability to provide the Service in line with the agreed service levels.
+
+9. Data Location and Data Protection
+Customer Data is stored and processed in data centres in Denmark and Ireland. The Supplier will notify the Customer at least six (6) months in advance of any planned change in the location of the Service or of Customer Data.
+The Supplier processes personal data on behalf of the Customer under the data processing agreement in Appendix 3, entered into in accordance with Article 28 of the GDPR.
+
+10. Audit and Authorities
+The Customer, an auditor appointed by the Customer and the Customer's competent authority have the right to access, inspect and audit the Supplier's premises, systems and documentation relevant to the Service, including the right to take copies. The scope, procedure and frequency of audits are set out in Appendix 5.
+The Supplier will cooperate fully with the Customer's competent authority and resolution authority, including Finanstilsynet and any person appointed by them.
+
+11. Artificial Intelligence
+The Supplier shall not use Customer Data to train, improve or develop its models or the models of any third party. The Supplier will provide instructions for use and transparency information for the Service, and will support the Customer's obligations as a deployer under the EU AI Act (Regulation (EU) 2024/1689), including information needed for human oversight.
+
+12. Confidentiality
+Each party shall keep the other party's confidential information confidential during the Agreement and for five (5) years after its end.
+
+13. Limitation of Liability
+Neither party is liable for indirect loss. Each party's total liability under this Agreement shall not exceed the fees paid by the Customer in the twenty-four (24) months before the event giving rise to the claim. The limitation does not apply to gross negligence, wilful misconduct or breach of the data processing agreement.
+
+14. Governing Law and Disputes
+This Agreement is governed by the laws of Denmark. Disputes shall be settled by the Copenhagen City Court (Københavns Byret).

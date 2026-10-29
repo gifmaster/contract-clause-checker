@@ -1,0 +1,178 @@
+# Risk checks for AI and SaaS vendor contracts, seen from the customer's side.
+#
+# Check types:
+#   missing         fires when no clause of type `clause` was found
+#   match           fires when a sentence (in `scope`: a clause id or "all") matches any `pattern`,
+#                   unless the same sentence also matches any `unless` pattern (e.g. a negation)
+#   present_without fires when clause `clause` exists, but none of its text matches `without`
+#   requires        fires when the contract matches any `if_any` pattern but no `then_any` pattern
+#   value_not_in    fires when the extracted value `value` exists and is not in `allowed`
+#
+# Severity: high, medium, low. Every check states why it matters and what it relates to.
+# This is a screening aid for contract review, not legal advice.
+
+checks:
+  - id: ai_training_on_data
+    in_dpa: true  # still relevant when the document is a data processing agreement on its own
+    severity: high
+    title: Vendor may use your data to train or improve its models
+    type: match
+    scope: all
+    pattern:
+      - '\b(us(e|es|ed|ing)|process|analy[sz]|access)\w*\b[^.]{0,80}\b(customer data|your data|client data|personal data|content|inputs?|prompts?|data you (submit|provide))\b[^.]{0,140}\b(train|improv|develop|enhanc|fine-?tun)\w*'
+      - '\b(train|improv|develop|enhanc|fine-?tun)\w*\b[^.]{0,60}\b(models?|AI|algorithms?|machine learning)\b[^.]{0,100}\b(customer data|your data|personal data|inputs?|prompts?|content)\b'
+      - '\b(anvende|bruge|behandle|benytte)\w*\b[^.]{0,80}\b(kundens data|kundedata|data|personoplysninger|indhold|input)\b[^.]{0,140}\b(træn|forbedr|udvikl|videreudvikl)\w*'
+    unless: ['\b(not|never|no)\b', "n't\\b", '\b(prior|written|express|explicit|separate)\s+(written\s+)?consent', '\b(ikke|aldrig|ingen)\b', '(forudgående|skriftligt|udtrykkeligt|særskilt)\s+samtykke',
+             '\bonly\s+(to|for|in order to)\b', '\bsolely\b', '\bexclusively\b', '\bkun\s+(til|for)\b', '\budelukkende\b']
+    why: Your data, including personal or confidential information, could end up in a model that serves other customers. It may also make the vendor a controller for that processing under GDPR.
+    ref: GDPR Art. 5(1)(b), 28; trade secrets
+
+  - id: missing_liability
+    severity: high
+    title: No limitation of liability clause found
+    type: missing
+    clause: liability
+    why: Without a liability clause, it is unclear what you can recover if the service fails or causes damage, and the default legal rules apply.
+    ref: Contract law
+
+  - id: no_liability_cap
+    severity: medium
+    title: Liability clause without a clear cap
+    type: present_without
+    clause: liability
+    without: ['shall not exceed', 'will not exceed', 'not exceed', '\bexceed', 'not be (more|greater) than', 'limited to', 'capped at', 'maximum (aggregate )?liability', '(total|aggregate|cumulative|entire)[^.]{0,30}liability', 'liability cap', 'general cap', 'overstige', 'begrænset til', 'maksim']
+    why: Check who carries the risk. An uncapped clause can cut both ways, and an exclusion-only clause may leave you with little to recover.
+    ref: Contract law
+
+  - id: short_liability_cap
+    severity: medium
+    title: Liability is capped at a very small amount of fees
+    type: match
+    scope: liability
+    pattern:
+      - '\b(cap|capped|exceed|limited to|not be (more|greater) than|amount)\b[^.]{0,140}\b(fees|charges|amounts?)\b[^.]{0,60}\b(one|1|two|2|three|3)\s*(\(\d\)\s*)?months?\b'
+      - '\b(fees|charges|amounts?)\b[^.]{0,60}\b(paid|payable)\b[^.]{0,60}\b(in|during|for|within)\b[^.]{0,30}\b(one|1|two|2|three|3)\s*(\(\d\)\s*)?months?\b'
+      - '\b(en|1|to|2|tre|3)\s*(\(\d\)\s*)?måneders?\b[^.]{0,60}\b(vederlag|betaling|gebyrer)'
+    unless: ['\b(twelve|12|eighteen|18|twenty-?four|24)\s*(\(\d+\)\s*)?months?\b']
+    why: A cap of one to three months of fees is far below the common twelve months and may be less than a single incident costs you. Check whether data breaches, confidentiality and indemnities sit outside the cap.
+    ref: Contract law; commercial practice
+
+  - id: no_dpa
+    severity: high
+    title: Personal data is processed, but no data processing agreement is referenced
+    type: requires
+    if_any: ['personal data', 'personally identifiable', 'personoplysninger', 'persondata']
+    then_any: ['data (processing|protection) (agreement|addendum|terms)', '\bDPA\b', 'article 28', 'art\. 28', 'databehandleraftale', 'artikel 28']
+    why: When a vendor processes personal data on your behalf, GDPR requires a written data processing agreement.
+    ref: GDPR Art. 28
+
+  - id: transfer_without_safeguards
+    in_dpa: true  # still relevant when the document is a data processing agreement on its own
+    severity: medium
+    title: Data may leave the EU without stated safeguards
+    type: requires
+    if_any:
+      - 'outside (of )?the (EU|EEA|European)'
+      - 'third countr'
+      - '\b(transfer|transmit|process|stor|host|access)\w*\b[^.]{0,60}\b(data|information|content|records)\b[^.]{0,60}\b(in|to|from|into|within)\b[^.]{0,20}\b(the )?(United States|U\.S\.A?|\bUSA\b|India|China|Singapore|Australia)'
+      - '\b(data|information|content|records)\b[^.]{0,60}\b(transferred|transmitted|processed|stored|hosted|accessed|located)\b[^.]{0,60}\b(in|to|from|into|within)\b[^.]{0,20}\b(the )?(United States|U\.S\.A?|\bUSA\b|India|China|Singapore|Australia)'
+      - '\b(servers?|data cent\w*|hosting)\b[^.]{0,60}\b(in|located in)\b[^.]{0,30}\b(United States|U\.S\.A?|\bUSA\b)'
+      - '\b(any|every|all) (country|countries|jurisdiction)\b[^.]{0,60}\b(maintain|operate|locat|facilit)'
+      - 'uden for (EU|EØS)'
+      - 'tredjeland'
+      - '\b(overfør|behandl|opbevar)\w*\b[^.]{0,120}\b(USA|Indien|Kina)\b'
+    then_any: ['standard contractual clauses', '\bSCCs?\b', 'adequacy decision', 'Data Privacy Framework', 'standardkontraktbestemmelser', 'tilstrækkelighedsafgørelse']
+    why: Transfers of personal data outside the EU/EEA need a legal basis, such as an adequacy decision or standard contractual clauses.
+    ref: GDPR Chapter V (Arts. 44-49)
+
+  - id: no_ai_act_terms
+    severity: medium
+    title: AI service without terms supporting your EU AI Act duties
+    type: requires
+    if_any: ['artificial intelligence', '\bAI\b', 'machine learning', 'large language model', 'kunstig intelligens']
+    then_any: ['AI Act', '2024/1689', 'AI-forordning', 'instructions for use', 'brugsanvisning', 'human oversight', 'menneskeligt tilsyn', 'transparency information']
+    why: As a deployer you must use AI systems according to the provider's instructions, and for high-risk systems you need information to ensure human oversight. The contract should oblige the vendor to provide it.
+    ref: EU AI Act Art. 13, 26(1), 26(2)
+
+  - id: auto_renewal
+    severity: medium
+    title: Automatic renewal
+    type: match
+    scope: all
+    pattern:
+      - 'automatically\s+renew'
+      - 'auto-?renew'
+      - 'renews?\s+automatically'
+      - 'renewed\s+automatically'
+      - 'automatic\s+renewal'
+      - '\b(will|shall|is deemed to)\s+renew\b[^.]{0,100}\bunless\b'
+      - 'renews?\s+for\s+(successive|additional|subsequent)'
+      - 'fornyes automatisk'
+      - 'forlænges automatisk'
+      - 'automatisk forlæng'
+      - 'automatisk forny'
+    unless: ['not (be )?(automatically|auto)', 'ikke automatisk']
+    why: The contract continues unless you give notice in time. Put the notice deadline in your calendar.
+    ref: Commercial
+
+  - id: unilateral_changes
+    severity: medium
+    title: Vendor may change the terms on its own
+    type: match
+    scope: all
+    pattern:
+      - '\b(may|can|reserves the right to)\b[^.]{0,20}\b(amend|modify|change|update|revise)\b[^.]{0,80}\b(terms|agreement|services?|features?|fees|prices?)\b[^.]{0,80}\b(at any time|from time to time|sole discretion|without (prior )?notice)'
+      - '\b(may|can|reserves? the right\b[^.]{0,40}\bto)\b[^.]{0,20}\b(amend|modify|change|update|revise)\b[^.]{0,40}\b(these |the |this |its )?(terms|agreement)\b[^.]{0,60}\b(by posting|posting a|on (its|our|the) website|at any time|sole discretion)'
+      - 'continued use\b[^.]{0,60}\b(constitutes?|shall constitute|will constitute|means|is deemed)\b[^.]{0,30}\b(acceptance|agreement|consent)'
+      - '\b(kan|forbeholder sig retten til at)\b[^.]{0,30}\b(ændre|opdatere|justere)\b[^.]{0,80}\b(vilkår|aftale|pris|ydelse)\w*[^.]{0,60}\b(når som helst|til enhver tid|ensidigt|uden varsel)'
+    unless: ['\b(not|never)\b', '\bikke\b']
+    why: Terms, features or prices may change during the contract without your agreement.
+    ref: Commercial
+
+  - id: vendor_may_end_anytime
+    severity: medium
+    title: Vendor may end or suspend the service at any time
+    type: match
+    scope: all
+    pattern:
+      - '\bmay\b[^.]{0,20}\b(terminate|suspend|discontinue)\b[^.]{0,80}\b(at any time|for convenience|for any reason|without cause)'
+      - '\b(may|reserves? the right\b[^.]{0,30}\bto)\b[^.]{0,60}\b(modify|change|suspend|discontinue|terminate)\b[^.]{0,40}\b(or|and)\b[^.]{0,20}\b(discontinue|suspend|terminate)\b[^.]{0,120}\b(at any time|for any reason|without (prior )?notice|sole discretion)'
+      - '\breserves? the right\b[^.]{0,60}\b(at any time)\b[^.]{0,60}\b(modify or discontinue|discontinue|suspend|terminate)\b'
+      - '\bkan\b[^.]{0,20}\b(opsige|suspendere|lukke)\b[^.]{0,80}\b(når som helst|til enhver tid|uden begrundelse)'
+    unless: ['either party', 'both parties', 'customer may', 'customer,[^.]{0,80}\bmay\b', 'hver part', 'begge parter', 'kunden kan']
+    why: A short exit right for the vendor can leave you without a critical service. Check the notice period and your exit plan.
+    ref: Commercial; DORA Art. 28 for financial entities
+
+  - id: non_eu_law
+    severity: medium
+    title: Governing law outside the EU
+    type: value_not_in
+    value: governing_law
+    known_only: true  # stay silent when the law cannot be read (a cover page variable, "the Governing Member State")
+    allowed: [Denmark, Sweden, Norway, Finland, Germany, Netherlands, Ireland, France, Belgium, Spain, Italy, Austria, Poland, Luxembourg, Portugal, Estonia]
+    why: Disputes may have to be handled under foreign law and in foreign courts, which is costly for a small or mid-sized company.
+    ref: Commercial
+
+  - id: missing_termination
+    severity: medium
+    title: No termination clause found
+    type: missing
+    clause: termination
+    why: Check how and when you can leave the contract, including on material breach.
+    ref: Commercial
+
+  - id: missing_governing_law
+    severity: low
+    title: No governing law clause found
+    type: missing
+    clause: governing_law
+    why: Without it, it may be unclear which country's law and courts apply.
+    ref: Commercial
+
+  - id: missing_confidentiality
+    severity: low
+    title: No confidentiality clause found
+    type: missing
+    clause: confidentiality
+    why: Information you share with the vendor may not be protected beyond what the law provides.
+    ref: Commercial

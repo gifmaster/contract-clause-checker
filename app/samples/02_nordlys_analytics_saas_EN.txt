@@ -1,0 +1,40 @@
+NORDLYS ANALYTICS APS
+SAAS AGREEMENT FOR AI-ASSISTED CUSTOMER SERVICE
+
+Between Nordlys Analytics ApS, Copenhagen ("Supplier") and the customer named in the order ("Customer"). This is a fictional sample contract for demonstration purposes.
+
+1. Scope
+The Supplier provides a cloud service that uses artificial intelligence to draft answers to customer enquiries ("Service"). Customer staff review each draft before it is sent.
+
+2. Term
+The Agreement starts on the effective date and runs for an initial term of twenty-four (24) months. After the initial term, either party may terminate the Agreement with three (3) months' written notice to the end of a month.
+
+3. Termination
+Either party may terminate the Agreement with immediate effect if the other party commits a material breach and has not remedied it within thirty (30) days of written notice. On termination, the Supplier will return or delete Customer Data within thirty (30) days, at the Customer's choice.
+
+4. Fees
+The fees are set out in the order and are invoiced quarterly in advance. Payment terms are thirty (30) days net. The Supplier may adjust prices once a year with ninety (90) days' written notice, and the Customer may terminate if it does not accept the adjustment.
+
+5. Service Levels
+The Supplier guarantees an availability of 99.5% per calendar month. Service credits apply as set out in Appendix 2.
+
+6. Data Protection
+The Supplier processes personal data on behalf of the Customer. The parties have entered into a data processing agreement in accordance with Article 28 of the GDPR, attached as Appendix 3. All data is stored in the EU. Sub-processors are listed in Appendix 3 and the Customer will be notified of changes.
+
+7. Artificial Intelligence
+The Supplier shall not use Customer Data to train, improve or develop its models or the models of any third party. The Supplier will provide instructions for use and transparency information for the Service, and will support the Customer's obligations as a deployer under the EU AI Act (Regulation (EU) 2024/1689), including information needed for human oversight.
+
+8. Confidentiality
+Each party shall keep the other party's confidential information confidential during the Agreement and for three (3) years after its end.
+
+9. Intellectual Property
+The Supplier retains all intellectual property rights in the Service. The Customer retains all rights in Customer Data and in outputs generated for the Customer.
+
+10. Limitation of Liability
+Neither party is liable for indirect loss, including loss of profit or data. Each party's total liability under this Agreement shall not exceed the fees paid by the Customer in the twelve (12) months before the event giving rise to the claim. The limitation does not apply to gross negligence, wilful misconduct or breach of the data processing agreement.
+
+11. Changes
+Changes to this Agreement must be agreed in writing by both parties.
+
+12. Governing Law and Disputes
+This Agreement is governed by the laws of Denmark. Disputes shall be settled by the Copenhagen City Court (Københavns Byret).

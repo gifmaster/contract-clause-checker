@@ -1,0 +1,74 @@
+# Clause types the checker looks for.
+#
+# Each clause type has:
+#   heading   regex patterns matched against a clause heading (strong signal, weight 3)
+#   body      regex patterns matched against the clause text (weaker signal, weight 1 each)
+#
+# Patterns are case-insensitive and cover English and Danish.
+# A segment gets the clause type with the highest score, if that score reaches min_score.
+
+# Date the rules in all packs were last checked against their sources. Update when you review them.
+last_reviewed: "2026-10-28"
+
+min_score: 3
+
+clauses:
+  - id: term
+    label: Term and renewal
+    heading: ['\bterm\b(?! of)', 'duration', 'renewal', 'varighed', 'løbetid', 'aftaleperiode', 'fornyelse']
+    body: ['initial term', 'renew', 'fornyes', 'løbetid', 'months? from the effective date', 'commencement']
+
+  - id: termination
+    label: Termination
+    heading: ['terminat', 'ending', 'cancel', 'exit', 'opsigelse', 'ophævelse', 'ophør']
+    body: ['terminate', 'termination', 'cancel', 'notice', 'opsig', 'ophæv', 'misligholdelse', 'material breach']
+
+  - id: liability
+    label: Limitation of liability
+    heading: ['liabilit', 'ansvar(?!lig)', 'ansvarsbegrænsning', 'erstatning']
+    body: ['liab', 'consequential', 'indirect', 'shall not exceed', 'aggregate', 'ansvar', 'indirekte tab', 'følgeskader', 'erstatning']
+
+  - id: indemnity
+    label: Indemnification
+    heading: ['indemn', 'skadesløs']
+    body: ['indemnif', 'hold harmless', 'defend', 'skadesløs']
+
+  - id: data_protection
+    label: Data protection
+    heading: ['data protection', 'personal data', 'privacy', 'gdpr', 'databeskyttelse', 'persondata', 'personoplysninger', 'databehandl', '^[\d.\s]*data[\s.]*$']
+    body: ['personal data', 'gdpr', 'data processing agreement', 'processor', 'sub-?processor', 'article 28', 'personoplysninger', 'databehandler', 'underdatabehandler']
+
+  - id: ai_use
+    label: AI and use of customer data
+    heading: ['artificial intelligence', '\bAI\b', 'machine learning', 'models?', 'kunstig intelligens', 'use of (customer )?data', '(your|customer) content', 'anvendelse af data', 'brug af data']
+    body: ['artificial intelligence', '\bAI\b', 'machine learning', '\bmodels?\b', 'train', 'kunstig intelligens', 'træn', 'algoritm', 'output']
+
+  - id: confidentiality
+    label: Confidentiality
+    heading: ['confidential', 'fortrolighed', 'tavshedspligt']
+    body: ['confidential', 'fortrolig', 'tavshed', 'non-disclosure']
+
+  - id: ip
+    label: Intellectual property
+    heading: ['intellectual property', 'ownership', 'immaterielle', 'ophavsret', 'rettigheder']
+    body: ['intellectual property', 'title and interest', 'ownership', 'immaterielle', 'ophavsret', 'ejendomsret', 'licen[sc]e']
+
+  - id: payment
+    label: Fees and payment
+    heading: ['fees', 'charges', 'payment', 'pric', 'betaling', 'vederlag', 'pris']
+    body: ['invoice', 'fees?', 'charges', 'billed', 'payment', 'faktur', 'betal', 'vederlag', '\bdkk\b', '\beur\b', 'kr\.']
+
+  - id: governing_law
+    label: Governing law and disputes
+    heading: ['governing law', '\blaw\s*$', 'jurisdiction', 'disputes?', 'lovvalg', 'værneting', 'tvister']
+    body: ['governed by', 'laws of', 'courts? of', 'arbitration', 'dansk ret', 'voldgift', 'værneting', 'byret']
+
+  - id: changes
+    label: Changes to the agreement
+    heading: ['amendment', 'changes? to (the|this)', '\bchanges?\s*$', 'modification', 'ændringer']
+    body: ['amend', 'modify', 'changes? to (these terms|this agreement)', 'ændre', 'ændring']
+
+  - id: service_levels
+    label: Service levels
+    heading: ['service level', '\bSLA\b', 'availability', 'oppetid', 'servicemål', 'tilgængelighed']
+    body: ['uptime', 'availability', '99[.,]\d', 'oppetid', 'tilgængelighed', 'service credit']

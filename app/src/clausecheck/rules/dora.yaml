@@ -1,0 +1,223 @@
+# DORA pack: key contractual provisions for ICT services used by financial entities.
+#
+# Regulation (EU) 2022/2554 (Digital Operational Resilience Act), Article 30.
+# Applies from 17 January 2025 to banks, insurers, pension funds, investment firms,
+# payment and e-money institutions, crypto-asset service providers and others listed in Art. 2.
+#
+# Every AI tool a financial entity buys is an ICT service, so its contract must contain these terms.
+#
+# level: all       Art. 30(2), required in every contract for ICT services
+#        critical  Art. 30(3), additionally required when the service supports a critical or important function
+#
+# Check types used here:
+#   absent   fires when no sentence in the contract matches any `pattern`
+#            (a sentence that also matches an `unless` pattern does not count, e.g. "may not audit")
+#   missing  fires when no clause of type `clause` was found
+#
+# The checks look for wording in the main contract text. Appendices are not read, so a finding
+# can mean "not in the main text, check the appendix". Screening aid, not legal advice.
+
+checks:
+  # ---------------------------------------------------------------- Art. 30(2): all ICT contracts
+  - id: dora_subcontracting
+    level: all
+    severity: medium
+    title: No terms on subcontracting
+    type: absent
+    pattern: ['subcontract', 'sub-?contractor', 'sub-?processor', 'underleverandør', 'underdatabehandler', 'underentrepren']
+    looked_for: subcontracting, sub-processors, underleverandører
+    why: The contract must say whether the vendor may subcontract services that support critical or important functions, and on what conditions.
+    ref: DORA Art. 30(2)(a)
+
+  - id: dora_data_location
+    level: all
+    severity: medium
+    title: No stated location for services and data
+    type: absent
+    pattern:
+      - '\b(stored|hosted|processed|located|provided|kept|opbevares|behandles|hostes|placeret)\b[^.]{0,50}\b(in|within|i|inden for)\s+(the\s+)?(EU|EEA|European|United States|USA|United Kingdom|UK|Denmark|Ireland|Germany|Sweden|Norway|Finland|Netherlands|EØS|Danmark|Irland|Tyskland|Sverige|Norge)'
+      - '\b(data cent(er|re)s?|datacent(er|re)|region)\b[^.]{0,40}\b(in|i)\s+(the\s+)?(EU|EEA|Denmark|Ireland|Germany|Sweden|Danmark|Irland|Tyskland|Sverige)'
+    looked_for: where services are provided and data is stored and processed
+    why: The contract must name the regions or countries where services are provided and data is processed and stored.
+    ref: DORA Art. 30(2)(b)
+
+  - id: dora_location_change_notice
+    level: all
+    severity: medium
+    title: No advance notice if the vendor moves services or data
+    type: absent
+    pattern:
+      - '\b(notif|inform|warn|varsl|underret|orienter)\w*[^.]{0,120}\b(chang|relocat|mov|ændr|flyt)\w*[^.]{0,60}\b(location|data cent|region|countr|lokation|placering|land|lande)'
+      - '\b(chang|relocat|mov|ændr|flyt)\w*[^.]{0,60}\b(location|data cent|region|countr|lokation|placering)\w*[^.]{0,120}\b(notice|notif|varsel|varsl|underret)'
+      - '\b(notice|notif|varsel|varsl|underret)\w*[^.]{0,120}\b(location|lokation|placering)\w*[^.]{0,60}\b(chang|relocat|mov|ændr|flyt)'
+    looked_for: an obligation to notify you in advance before locations change
+    why: The vendor must notify you in advance if it plans to change where services are provided or data is processed.
+    ref: DORA Art. 30(2)(b)
+
+  - id: dora_data_security
+    level: all
+    severity: medium
+    title: No provisions on the security of data
+    type: absent
+    pattern: ['\bintegrity\b', 'information security', 'security measures', 'technical and organi[sz]ational measures', 'ISO/?IEC 27001', '\bintegritet', 'sikkerhedsforanstaltninger', 'tekniske og organisatoriske']
+    looked_for: availability, authenticity, integrity and confidentiality of data, security measures
+    why: The contract must cover the availability, authenticity, integrity and confidentiality of data, including personal data.
+    ref: DORA Art. 30(2)(c)
+
+  - id: dora_data_return
+    level: all
+    severity: high
+    title: No right to get your data back
+    type: absent
+    pattern:
+      - '\b(return|export|retriev|tilbagelever|udlever|eksporter)\w*[^.]{0,80}\b(data|content|indhold)\b'
+      - '\b(make|makes|made)\b[^.]{0,60}\b(data|content)\b[^.]{0,40}\bavailable'
+      - '\bstille\w*\b[^.]{0,60}\b(data|indhold)\b[^.]{0,40}\btil rådighed'
+    unless: ['\b(will|shall|does|is|are|may|can) not\b', "n't\\b", '\bno (obligation|duty|responsibility)', '\b(er|har|kan|skal|vil) ikke\b']
+    looked_for: access to, recovery and return of your data
+    why: You must be able to access, recover and get your data back in an easily accessible format when the contract ends or the vendor fails.
+    ref: DORA Art. 30(2)(d)
+
+  - id: dora_insolvency_access
+    level: all
+    severity: medium
+    title: Nothing on your data if the vendor goes out of business
+    type: absent
+    pattern: ['insolven', 'bankrupt', 'liquidat', 'konkurs', 'rekonstruktion', 'ceases? (to )?(trade|trading|operate|do business)', 'discontinu\w*[^.]{0,30}\b(business|operations)', 'ophør\w*[^.]{0,30}\bvirksomhed']
+    looked_for: what happens to your data on insolvency, resolution or discontinuation
+    why: Access to and return of your data must also be ensured if the vendor becomes insolvent, is resolved or stops operating.
+    ref: DORA Art. 30(2)(d)
+
+  - id: dora_service_levels
+    level: all
+    severity: medium
+    title: No service level clause found
+    type: missing
+    clause: service_levels
+    looked_for: a service level clause
+    why: The contract must contain service level descriptions, including how they are updated.
+    ref: DORA Art. 30(2)(e)
+
+  - id: dora_incident_assistance
+    level: all
+    severity: medium
+    title: No duty to assist you with ICT incidents
+    type: absent
+    pattern:
+      - '\b(assist|support|help|bistå|bistand|hjælp)\w*[^.]{0,120}\b(incident|breach|outage|disruption|hændelse|brud|nedbrud)'
+      - '\b(incident|hændelse)\w*[^.]{0,120}\b(assist|support|bistå|bistand)'
+    unless: ['\b(will|shall|does|is|are|may|can) not\b', "n't\\b", '\bno (obligation|duty|responsibility)', '\b(er|har|kan|skal|vil) ikke\b']
+    looked_for: assistance with ICT incidents, at no extra cost or a cost agreed in advance
+    why: The vendor must help you when an ICT incident related to its service occurs, at no extra cost or at a cost agreed in advance.
+    ref: DORA Art. 30(2)(f)
+
+  - id: dora_authority_cooperation
+    level: all
+    severity: medium
+    title: No duty to cooperate with your supervisor
+    type: absent
+    pattern:
+      - '\b(cooperat|co-operat|samarbejd|medvirk)\w*[^.]{0,100}\b(competent authorit|supervisory authorit|resolution authorit|regulator|Finanstilsynet|tilsynsmyndighed|afviklingsmyndighed|myndighed)'
+      - '\b(competent authorit|supervisory authorit|regulator|Finanstilsynet|tilsynsmyndighed)\w*[^.]{0,100}\b(cooperat|co-operat|samarbejd|medvirk)'
+    looked_for: cooperation with competent and resolution authorities
+    why: The vendor must cooperate fully with your competent authority (Finanstilsynet in Denmark) and resolution authority.
+    ref: DORA Art. 30(2)(g)
+
+  - id: dora_customer_termination
+    level: all
+    severity: high
+    title: No termination right for you
+    type: absent
+    pattern:
+      - '\b(customer|you|client|either party|each party|kunden|hver part|begge parter)\b[^.]{0,30}\b(may|can|is entitled to|has the right to|kan|er berettiget til|har ret til)\b[^.]{0,40}\b(terminat|cancel|end|opsig|ophæv)'
+    looked_for: your right to terminate the contract
+    why: You need termination rights with minimum notice periods that meet your supervisor's expectations.
+    ref: DORA Art. 30(2)(h), 28(7)
+
+  - id: dora_regulatory_termination
+    level: all
+    severity: medium
+    title: No termination right on regulatory grounds
+    type: absent
+    pattern:
+      - '\bterminat\w*[^.]{0,160}\b(competent authorit|supervisory authorit|regulator|Finanstilsynet|applicable (law|regulation)|regulatory|breach of law)'
+      - '\b(competent authorit|supervisory authorit|regulator|Finanstilsynet)\w*[^.]{0,160}\bterminat'
+      - '\b(opsig|ophæv)\w*[^.]{0,160}\b(tilsyn|myndighed|Finanstilsynet|lovgivning)'
+    looked_for: termination where the vendor breaches law, or your supervisor can no longer supervise
+    why: DORA expects you to be able to terminate, for example when the vendor breaches applicable law, has weaknesses in its ICT risk management, or your supervisor can no longer effectively supervise the service.
+    ref: DORA Art. 28(7), 30(2)(h)
+
+  - id: dora_training
+    level: all
+    severity: low
+    title: No terms on the vendor's part in your security training
+    type: absent
+    pattern: ['awareness', 'resilience training', 'security training', 'sikkerhedstræning', 'sikkerhedsuddannelse', 'awareness-?(program|træning)']
+    looked_for: conditions for the vendor's participation in your ICT security awareness and resilience training
+    why: The contract must set the conditions for the vendor's participation in your ICT security awareness programmes and digital operational resilience training.
+    ref: DORA Art. 30(2)(i), 13(6)
+
+  # ---------------------------------------------------------------- Art. 30(3): critical or important functions
+  - id: dora_quantitative_slas
+    level: critical
+    severity: high
+    title: No precise performance targets
+    type: absent
+    pattern: ['\d{2}[.,]\d+\s?%', 'response time', 'resolution time', 'recovery time', '\bRTO\b', '\bRPO\b', 'svartid', 'løsningstid', 'genopretningstid']
+    looked_for: quantitative targets such as availability %, response or recovery times
+    why: For critical or important functions, service levels need precise quantitative and qualitative targets so you can monitor them and act when they are missed.
+    ref: DORA Art. 30(3)(a)
+
+  - id: dora_material_change_notice
+    level: critical
+    severity: medium
+    title: No duty to warn you of developments that could affect the service
+    type: absent
+    pattern:
+      - '\b(notif|inform|warn|report|varsl|underret|orienter)\w*[^.]{0,120}\b(material|significant|væsentlig)\w*[^.]{0,80}\b(chang|development|impact|event|effect|ændring|påvirk|hændelse|forhold)'
+    looked_for: notice of any development that might materially affect the service
+    why: The vendor must report developments that might materially affect its ability to provide the service as agreed.
+    ref: DORA Art. 30(3)(b)
+
+  - id: dora_business_continuity
+    level: critical
+    severity: high
+    title: No business continuity requirements
+    type: absent
+    pattern: ['business continuity', 'contingency plan', 'continuity plan', 'disaster recovery', 'beredskabsplan', 'nødplan', 'kontinuitetsplan', 'katastrofeplan']
+    looked_for: business contingency plans that the vendor implements and tests
+    why: The vendor must implement and test business contingency plans and have appropriate ICT security measures, tools and policies.
+    ref: DORA Art. 30(3)(c)
+
+  - id: dora_tlpt
+    level: critical
+    severity: medium
+    title: No duty to take part in threat-led penetration testing
+    type: absent
+    pattern: ['\bTLPT\b', 'threat-led', 'penetration test', 'penetrationstest', 'trusselsbaseret']
+    looked_for: participation in your threat-led penetration testing (TLPT)
+    why: The vendor must participate and cooperate fully in your threat-led penetration testing where it applies to you.
+    ref: DORA Art. 30(3)(d), 26, 27
+
+  - id: dora_audit_rights
+    level: critical
+    severity: high
+    title: No audit and access rights
+    type: absent
+    pattern:
+      - '\b(right|rights|entitled|may|can|ret|kan|adgang)\b[^.]{0,80}\b(audit|inspect|revid|revision|inspic|inspektion)\w*'
+      - '\b(audit|inspection|revision)\s+(rights?|ret)\b'
+    unless: ['\b(may|shall|will|can) not\b', "n't\\b", '\bno right', '\b(kan|må) ikke\b']
+    looked_for: unrestricted rights of access, inspection and audit for you, your auditor and the authority
+    why: You, an appointed third party and your competent authority need unrestricted rights of access, inspection and audit.
+    ref: DORA Art. 30(3)(e)
+
+  - id: dora_exit_strategy
+    level: critical
+    severity: high
+    title: No exit strategy or transition period
+    type: absent
+    pattern: ['\bexit\s+(plan|strategy|strategies|assistance|management|support)', 'transition (period|assistance|services?|plan)', '\bmigrat\w*[^.]{0,80}\b(provider|supplier|vendor|in-house|leverandør)', 'exitplan', 'exitstrategi', 'overgangsperiode', 'exitbistand']
+    looked_for: an exit strategy with a mandatory transition period
+    why: You need an exit strategy with a mandatory, adequate transition period in which the vendor keeps providing the service while you move to another provider or in-house.
+    ref: DORA Art. 30(3)(f)

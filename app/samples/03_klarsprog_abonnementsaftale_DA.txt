@@ -1,0 +1,31 @@
+ABONNEMENTSAFTALE
+KLARSPROG AI APS
+
+Aftale mellem Klarsprog AI ApS ("Leverandøren") og kunden angivet i ordrebekræftelsen ("Kunden"). Dette er en fiktiv eksempelkontrakt til demonstrationsbrug.
+
+1. Ydelsen
+Leverandøren stiller en tjeneste til rådighed, der bruger kunstig intelligens til at omskrive breve og vejledninger til klart sprog ("Tjenesten"). Kunden er ansvarlig for at gennemgå teksterne, før de sendes.
+
+2. Løbetid og fornyelse
+Aftalen har en løbetid på 12 måneder fra ikrafttrædelsen. Aftalen fornyes automatisk med 12 måneder ad gangen, medmindre den opsiges skriftligt med tre (3) måneders varsel til udløbet af den aktuelle periode.
+
+3. Opsigelse og ophævelse
+Hver part kan ophæve aftalen ved væsentlig misligholdelse, hvis misligholdelsen ikke er afhjulpet senest 30 dage efter skriftligt påkrav.
+
+4. Vederlag og betaling
+Vederlaget fremgår af ordrebekræftelsen og faktureres årligt forud. Betalingsfristen er 30 dage. Leverandøren kan ændre priserne til enhver tid med en måneds varsel.
+
+5. Behandling af personoplysninger
+Leverandøren behandler personoplysninger på vegne af Kunden. Parterne har indgået en databehandleraftale i overensstemmelse med databeskyttelsesforordningens artikel 28. Data opbevares i EU.
+
+6. Brug af data og kunstig intelligens
+Leverandøren må ikke anvende Kundens data til at træne eller forbedre sprogmodeller. Leverandøren stiller en brugsanvisning til rådighed, som beskriver Tjenestens begrænsninger og krav til menneskeligt tilsyn.
+
+7. Fortrolighed
+Parterne har tavshedspligt om fortrolige oplysninger, som de modtager i forbindelse med aftalen.
+
+8. Ansvarsbegrænsning
+Leverandøren er ikke ansvarlig for indirekte tab, herunder driftstab og tab af data. Leverandørens samlede ansvar er begrænset til det vederlag, Kunden har betalt i de seneste 12 måneder.
+
+9. Lovvalg og værneting
+Aftalen er underlagt dansk ret. Tvister afgøres ved Københavns Byret.

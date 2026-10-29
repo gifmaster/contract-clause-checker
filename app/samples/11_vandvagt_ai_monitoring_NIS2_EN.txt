@@ -1,0 +1,37 @@
+VANDVAGT AI APS
+SERVICE AGREEMENT FOR AI LEAK DETECTION
+
+Between Vandvagt AI ApS, Aalborg ("Supplier") and the water utility named in the order ("Customer"). This is a fictional sample contract for demonstration purposes. The Customer is an essential entity under the Danish NIS2 Act (NIS2-loven), and this Agreement is part of its supply chain security.
+
+1. Services
+The Supplier provides a cloud service that uses machine learning on pressure and flow data to detect probable leaks in the Customer's water network ("Service"). The Customer's operators decide every intervention.
+
+2. Term and Termination
+The Agreement runs for an initial term of thirty-six (36) months. After the initial term, either party may terminate the Agreement with six (6) months' written notice. Either party may terminate the Agreement for material breach that is not remedied within thirty (30) days of written notice.
+
+3. Security Requirements
+The Supplier maintains an information security management system certified to ISO/IEC 27001 and meets the security requirements in Appendix 2, including multi-factor authentication, encryption of data in transit and at rest, and logging of all administrative access.
+
+4. Incidents
+The Supplier will notify the Customer without undue delay, and no later than four (4) hours after becoming aware of it, of any incident that affects or may affect the Customer's network and information systems.
+
+5. Vulnerabilities
+The Supplier monitors the Service for vulnerabilities, applies critical security patches within seventy-two (72) hours, and informs the Customer of any vulnerability that may present a risk to the Customer's network and information systems.
+
+6. Audit
+The Supplier provides the Customer each year with an independent ISAE 3402 type 2 audit report. The Customer may audit the Supplier, or have an auditor do so, once a year and after any significant incident.
+
+7. Subcontracting
+The Supplier may only use subcontractors with the Customer's prior written approval, and imposes security requirements on each subcontractor that are no less strict than those in this Agreement.
+
+8. Exit
+When the Agreement ends, the Supplier returns all Customer data in a common machine-readable format within thirty (30) days and then deletes all copies, and confirms the deletion in writing.
+
+9. Fees
+The fees are set out in the order and are invoiced quarterly in advance. Payment terms are thirty (30) days net.
+
+10. Limitation of Liability
+Neither party is liable for indirect loss. Each party's total liability under this Agreement shall not exceed the fees paid by the Customer in the twelve (12) months before the event giving rise to the claim.
+
+11. Governing Law
+This Agreement is governed by the laws of Denmark. Disputes shall be settled by the Copenhagen City Court (Københavns Byret).

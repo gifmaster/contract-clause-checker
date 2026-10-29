@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>AI Contract Clause Checker</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@stlite/browser@1.12.0/build/stlite.css" />
+    <style>
+      #loading { font-family: system-ui, sans-serif; max-width: 36rem; margin: 4rem auto; padding: 0 1rem; color: #333; }
+    </style>
+  </head>
+  <body>
+    <div id="root"></div>
+    <noscript>This app runs Python in your browser and needs JavaScript.</noscript>
+    <script type="module">
+      import { mount } from "https://cdn.jsdelivr.net/npm/@stlite/browser@1.12.0/build/stlite.js";
+      const files = {
+        "app.py": {
+                "url": "app/app.py"
+        },
+        "NOTICE": {
+                "url": "app/NOTICE"
+        },
+        "LICENSE": {
+                "url": "app/LICENSE"
+        },
+        "samples/01_brightloop_ai_terms_EN.txt": {
+                "url": "app/samples/01_brightloop_ai_terms_EN.txt"
+        },
+        "samples/02_nordlys_analytics_saas_EN.txt": {
+                "url": "app/samples/02_nordlys_analytics_saas_EN.txt"
+        },
+        "samples/03_klarsprog_abonnementsaftale_DA.txt": {
+                "url": "app/samples/03_klarsprog_abonnementsaftale_DA.txt"
+        },
+        "samples/06_havbro_claims_ai_DORA_EN.txt": {
+                "url": "app/samples/06_havbro_claims_ai_DORA_EN.txt"
+        },
+        "samples/11_vandvagt_ai_monitoring_NIS2_EN.txt": {
+                "url": "app/samples/11_vandvagt_ai_monitoring_NIS2_EN.txt"
+        },
+        "samples/08_nordlys_dpa_EN.txt": {
+                "url": "app/samples/08_nordlys_dpa_EN.txt"
+        },
+        "samples/09_klarsprog_databehandleraftale_DA.txt": {
+                "url": "app/samples/09_klarsprog_databehandleraftale_DA.txt"
+        },
+        "src/clausecheck/__init__.py": {
+                "url": "app/src/clausecheck/__init__.py"
+        },
+        "src/clausecheck/engine.py": {
+                "url": "app/src/clausecheck/engine.py"
+        },
+        "src/clausecheck/fonts/DejaVuSans-Bold.ttf": {
+                "url": "app/src/clausecheck/fonts/DejaVuSans-Bold.ttf"
+        },
+        "src/clausecheck/fonts/DejaVuSans-BoldOblique.ttf": {
+                "url": "app/src/clausecheck/fonts/DejaVuSans-BoldOblique.ttf"
+        },
+        "src/clausecheck/fonts/DejaVuSans-Oblique.ttf": {
+                "url": "app/src/clausecheck/fonts/DejaVuSans-Oblique.ttf"
+        },
+        "src/clausecheck/fonts/DejaVuSans.ttf": {
+                "url": "app/src/clausecheck/fonts/DejaVuSans.ttf"
+        },
+        "src/clausecheck/fonts/LICENSE-DejaVu.txt": {
+                "url": "app/src/clausecheck/fonts/LICENSE-DejaVu.txt"
+        },
+        "src/clausecheck/pdf.py": {
+                "url": "app/src/clausecheck/pdf.py"
+        },
+        "src/clausecheck/reader.py": {
+                "url": "app/src/clausecheck/reader.py"
+        },
+        "src/clausecheck/report.py": {
+                "url": "app/src/clausecheck/report.py"
+        },
+        "src/clausecheck/rules/checks.yaml": {
+                "url": "app/src/clausecheck/rules/checks.yaml"
+        },
+        "src/clausecheck/rules/clauses.yaml": {
+                "url": "app/src/clausecheck/rules/clauses.yaml"
+        },
+        "src/clausecheck/rules/dora.yaml": {
+                "url": "app/src/clausecheck/rules/dora.yaml"
+        },
+        "src/clausecheck/rules/gdpr.yaml": {
+                "url": "app/src/clausecheck/rules/gdpr.yaml"
+        },
+        "src/clausecheck/rules/nis2.yaml": {
+                "url": "app/src/clausecheck/rules/nis2.yaml"
+        }
+};
+      mount(
+        {
+          entrypoint: "app.py",
+          requirements: ["pyyaml", "pypdf", "python-docx", "fpdf2"],
+          files,
+        },
+        document.getElementById("root"),
+      );
+    </script>
+  </body>
+</html>
